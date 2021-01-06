@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DatabaseService } from 'src/app/services/database.service';
 
 @Component({
   selector: 'app-buyings-tab',
@@ -7,9 +8,10 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BuyingsTabPage implements OnInit {
 
-  constructor() { }
+  constructor(private databaseService: DatabaseService) { }
 
   ngOnInit() {
+    this.databaseService.executeQuery('select * from product');
   }
 
 }
