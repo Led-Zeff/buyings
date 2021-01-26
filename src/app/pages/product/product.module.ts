@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { ProductsTabPageRoutingModule } from './products-tab-routing.module';
-import { ProductsTabPage } from './products-tab.page';
+import { ProductPageRoutingModule } from './product-routing.module';
+import { ProductPage } from './product.page';
 
 @NgModule({
   imports: [
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
-    ProductsTabPageRoutingModule
+    ProductPageRoutingModule
   ],
-  declarations: [ProductsTabPage]
+  declarations: [ProductPage]
 })
-export class ProductsTabPageModule {}
+export class ProductPageModule {}

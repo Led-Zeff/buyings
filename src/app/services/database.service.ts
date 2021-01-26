@@ -5,6 +5,8 @@ import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { ResultSet } from '../models/result-set';
+import { Mappers } from '../utils/mappers';
 
 @Injectable({
   providedIn: 'root'
@@ -26,18 +28,24 @@ export class DatabaseService {
     });
   }
 
+  async executeQuery(query: string, params?: any[]) {
+    await this.onDbReady;
+
+    return (await this.database.executeSql(query, params)) as ResultSet;
+  }
+
+  async singleRowListQuery<T>(query: string, params?: any[]) {
+    await this.onDbReady;
+    const result = await this.database.executeSql(query, params);
+    return Mappers.singleRowMapper<T>(result);
+  }
+
   private createDatabase() {
-    this.http.get('assets/database-scheme.sql', { responseType: 'text' }).subscribe(sql => {
+    this.http.get('assets/database.sql', { responseType: 'text' }).subscribe(sql => {
       this.sqlitePorter.importSqlToDb(this.database, sql).then(() =>
         this.dbReady.next(true)
       );
     });
-  }
-
-  async executeQuery(query: string, params?: any[]) {
-    await this.onDbReady;
-
-    console.log(await this.database.executeSql(query, params));
   }
 
   private get onDbReady(): Promise<void> {
