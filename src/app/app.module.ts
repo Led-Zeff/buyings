@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
@@ -11,6 +11,7 @@ import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { GlobarErrorHandler } from './error/global-error-handler';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,7 +22,8 @@ import { AppRoutingModule } from './app-routing.module';
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     SQLite,
-    SQLitePorter
+    SQLitePorter,
+    { provide: ErrorHandler, useClass: GlobarErrorHandler }
   ],
   bootstrap: [AppComponent]
 })

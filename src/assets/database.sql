@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS product (
   id TEXT NOT NULL PRIMARY KEY,
   "name" TEXT NOT NULL,
   package_type TEXT,
-  content_quantity INTEGER,
+  content_quantity INTEGER NOT NULL,
   last_bought_time TEXT,
   sale_price REAL,
   deleted INTEGER
@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS packaging (
 CREATE INDEX IF NOT EXISTS "IX_Buying_ProductId" ON "buying" ("product_id");
 
 INSERT INTO packaging
-  SELECT 'Pieza' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'Pieza')
+  SELECT 'PIEZA' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'PIEZA')
   UNION
-  SELECT 'Kilo' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'Kilo')
+  SELECT 'KILO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'KILO')
   UNION
-  SELECT 'Litro' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'Litro');
+  SELECT 'LITRO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'Litro');

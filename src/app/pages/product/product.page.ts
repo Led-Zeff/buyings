@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import { Observable } from 'rxjs';
 import { ProductService } from 'src/app/services/product.service';
+import { CustomValidators } from 'src/app/utils/custom-validators';
 
 @Component({
   selector: 'app-product',
@@ -13,16 +13,19 @@ export class ProductPage implements OnInit {
   productForm: FormGroup;
   packages: string[];
 
-  constructor(private modalCtrl: ModalController, private productSrv: ProductService, private fb: FormBuilder, private alertCtrl: AlertController) { }
+  constructor(private modalCtrl: ModalController,
+    private productSrv: ProductService,
+    private fb: FormBuilder,
+    private alertCtrl: AlertController) { }
 
   ngOnInit() {
     this.productForm = this.fb.group({
       id: [],
-      name: [],
+      name: ['', [CustomValidators.notEmpty, CustomValidators.noSymbols] ],
       packageType: [],
-      contentQuantity: [],
+      contentQuantity: [null, [Validators.required, Validators.min(1), CustomValidators.number] ],
       lastBoughtTime: [],
-      salePrice: [],
+      salePrice: [null, [CustomValidators.decimal] ],
       deleted: []
     });
 
@@ -33,7 +36,7 @@ export class ProductPage implements OnInit {
     this.packages = await this.productSrv.getPackages();
   }
 
-  async newPackage() {
+  async newPackageDialog() {
     const alert = await this.alertCtrl.create({
       subHeader: 'Nuevo tipo de empaquetado',
       inputs: [
@@ -51,16 +54,29 @@ export class ProductPage implements OnInit {
         }, {
           text: 'Ok',
           handler: ({packaging}) => {
-            if (packaging && packaging.trim() !== '') {
-              this.productSrv.newPackage(packaging);
-              this.loadPackages();
-            }
+            this.createPackage(packaging);
           }
         }
       ]
     });
 
     await alert.present();
+  }
+
+  async onSubmit() {
+    this.productForm.markAllAsTouched();
+    if (this.productForm.valid) {
+      await this.productSrv.newProduct(this.productForm.value);
+      this.dismissModal();
+    }
+  }
+
+  private async createPackage(name: string) {
+    if (name && name.trim() !== '') {
+      const pack = await this.productSrv.newPackage(name);
+      await this.loadPackages();
+      this.productForm.controls.packageType.setValue(pack);
+    }
   }
 
   dismissModal() {

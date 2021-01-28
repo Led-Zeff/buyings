@@ -1,11 +1,11 @@
 import { Moment } from "moment";
 
 export class Product {
-  id: string;
+  id?: string;
   name: string;
-  packageType: string;
+  packageType?: string;
   contentQuantity: number;
-  lastBoughtTime: Moment;
-  salePrice: number;
-  deleted: boolean;
+  lastBoughtTime?: Moment;
+  salePrice?: number;
+  deleted?: boolean;
 }
