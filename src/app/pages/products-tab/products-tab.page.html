@@ -7,6 +7,30 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-list>
+    <ion-item *ngFor="let item of products; trackBy:getProductUpdTime" button (click)="showProductModal(item.product)">
+      <ion-avatar slot="start" [ngSwitch]="item.product.packageType">
+        <ion-icon *ngSwitchCase="'PIEZA'" class="avatar-icon" name="pricetag-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'LITRO'" class="avatar-icon" name="water-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'KILO'" class="avatar-icon" name="cube-outline"></ion-icon>
+        <ion-icon *ngSwitchDefault class="avatar-icon" [name]="item.icon"></ion-icon>
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ item.product.name }}</h2>
+        <p *ngIf="item.product.packageType">{{ item.product.packageType | titlecase }}</p>
+        <!-- <p>Pieza x5 :: 24 x $23.45</p>   -->
+      </ion-label>
+      <span>{{ item.product.salePrice | currency }}</span>
+    </ion-item>
+  </ion-list>
+
+  <ion-infinite-scroll treshold='200px' (ionInfinite)="infiniteEvent(infinite)" #infinite>
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Cargando...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="showProductModal()">
       <ion-icon name="add"></ion-icon>

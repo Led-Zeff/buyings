@@ -40,6 +40,12 @@ export class DatabaseService {
     return Mappers.singleRowMapper<T>(result);
   }
 
+  async listQuery<T>(query: string, params?: any[]) {
+    await this.onDbReady;
+    const result = await this.database.executeSql(query, params);
+    return Mappers.objectMapper<T>(result);
+  }
+
   private createDatabase() {
     this.http.get('assets/database.sql', { responseType: 'text' }).subscribe(sql => {
       this.sqlitePorter.importSqlToDb(this.database, sql).then(() =>

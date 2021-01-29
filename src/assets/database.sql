@@ -1,8 +1,3 @@
-drop index IX_Buying_ProductId;
-drop table buying;
-drop table product;
-drop table packaging;
-
 CREATE TABLE IF NOT EXISTS product (
   id TEXT NOT NULL PRIMARY KEY,
   "name" TEXT NOT NULL,
@@ -10,8 +5,10 @@ CREATE TABLE IF NOT EXISTS product (
   content_quantity INTEGER NOT NULL,
   last_bought_time TEXT,
   sale_price REAL,
-  deleted INTEGER
+  last_time_updated TEXT DEFAULT CURRENT_TIMESTAMP,
+  deleted INTEGER NOT NULL DEFAULT 0
 );
+delete from product;
 
 CREATE TABLE IF NOT EXISTS buying (
   id TEXT NOT NULL PRIMARY KEY,
@@ -34,4 +31,4 @@ INSERT INTO packaging
   UNION
   SELECT 'KILO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'KILO')
   UNION
-  SELECT 'LITRO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'Litro');
+  SELECT 'LITRO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'LITRO');

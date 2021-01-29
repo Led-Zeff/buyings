@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
+import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
 
@@ -10,6 +11,8 @@ import { CustomValidators } from 'src/app/utils/custom-validators';
   styleUrls: ['./product.page.scss'],
 })
 export class ProductPage implements OnInit {
+  @Input() product: Product;
+
   productForm: FormGroup;
   packages: string[];
 
@@ -18,7 +21,7 @@ export class ProductPage implements OnInit {
     private fb: FormBuilder,
     private alertCtrl: AlertController) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.productForm = this.fb.group({
       id: [],
       name: ['', [CustomValidators.notEmpty, CustomValidators.noSymbols] ],
@@ -26,10 +29,14 @@ export class ProductPage implements OnInit {
       contentQuantity: [null, [Validators.required, Validators.min(1), CustomValidators.number] ],
       lastBoughtTime: [],
       salePrice: [null, [CustomValidators.decimal] ],
+      lastTimeUpdated: [],
       deleted: []
     });
 
-    this.loadPackages();
+    await this.loadPackages();
+    if (this.product) {
+      this.productForm.patchValue(this.product);
+    }
   }
 
   async loadPackages() {
@@ -66,8 +73,41 @@ export class ProductPage implements OnInit {
   async onSubmit() {
     this.productForm.markAllAsTouched();
     if (this.productForm.valid) {
-      await this.productSrv.newProduct(this.productForm.value);
-      this.dismissModal();
+      let id: string;
+      if (!this.product?.id) {
+        id = await this.productSrv.newProduct(this.productForm.value);
+      } else {
+        id = await this.productSrv.updateProduct(this.productForm.value);
+      }
+      this.dismissModal(id);
+    }
+  }
+
+  async confirmDelete() {
+    const alert = await this.alertCtrl.create({
+      subHeader: `Eliminar producto ${this.productForm.value.name}`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        }, {
+          text: 'Eliminar',
+          cssClass: 'danger',
+          handler: () => {
+            this.deleteProduct();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async deleteProduct() {
+    if (this.product?.id) {
+      await this.productSrv.deleteProduct(this.product.id);
+      this.dismissModal('deleted');
     }
   }
 
@@ -79,7 +119,7 @@ export class ProductPage implements OnInit {
     }
   }
 
-  dismissModal() {
-    this.modalCtrl.dismiss();
+  dismissModal(productId?: string) {
+    this.modalCtrl.dismiss({ productId });
   }
 }

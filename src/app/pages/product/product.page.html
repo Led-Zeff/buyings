@@ -19,7 +19,7 @@
       <ion-item-sliding #slider>
         <ion-item>
           <ion-label position="stacked">Tipo</ion-label>
-          <ion-select formControlName="packageType" interface="popover">
+          <ion-select formControlName="packageType">
             <ion-select-option [value]="package" *ngFor="let package of packages">{{ package | titlecase }}</ion-select-option>
           </ion-select>
         </ion-item>
@@ -40,7 +40,12 @@
       </ion-item>
     </ion-list>
 
-    <ion-button (click)="onSubmit()" color="primary" expand="block">
+    <ion-button *ngIf="product?.id" (click)="confirmDelete()" color="danger" expand="block" style="margin-top: 20px">
+      <ion-icon slot="start" name="trash-outline"></ion-icon>
+      Eliminar
+    </ion-button>
+
+    <ion-button (click)="onSubmit()" color="primary" expand="block" style="margin-top: 20px">
       <ion-icon slot="start" name="save"></ion-icon>
       Guardar
     </ion-button>

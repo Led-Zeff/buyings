@@ -7,5 +7,6 @@ export class Product {
   contentQuantity: number;
   lastBoughtTime?: Moment;
   salePrice?: number;
-  deleted?: boolean;
+  lastTimeUpdated: string;
+  deleted?: number;
 }
