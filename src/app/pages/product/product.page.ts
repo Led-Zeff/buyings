@@ -4,6 +4,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
+import { icons, randomIcon } from 'src/app/utils/product-icons';
 
 @Component({
   selector: 'app-product',
@@ -15,6 +16,7 @@ export class ProductPage implements OnInit {
 
   productForm: FormGroup;
   packages: string[];
+  icons = {'PIEZA': 'pricetag-outline', 'LITRO': 'water-outline', 'KILO': 'cube-outline'};
 
   constructor(private modalCtrl: ModalController,
     private productSrv: ProductService,
@@ -74,10 +76,11 @@ export class ProductPage implements OnInit {
     this.productForm.markAllAsTouched();
     if (this.productForm.valid) {
       let id: string;
+      const prod: Product = {...this.productForm.value, icon: icons[this.productForm.value.packageType] || randomIcon()};
       if (!this.product?.id) {
-        id = await this.productSrv.newProduct(this.productForm.value);
+        id = await this.productSrv.newProduct(prod);
       } else {
-        id = await this.productSrv.updateProduct(this.productForm.value);
+        id = await this.productSrv.updateProduct(prod);
       }
       this.dismissModal(id);
     }

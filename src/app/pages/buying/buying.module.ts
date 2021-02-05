@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { BuyingsTabPageRoutingModule } from './buyings-tab-routing.module';
+import { BuyingPageRoutingModule } from './buying-routing.module';
 
-import { BuyingsTabPage } from './buyings-tab.page';
+import { BuyingPage } from './buying.page';
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
     ReactiveFormsModule,
-    BuyingsTabPageRoutingModule
+    IonicModule,
+    BuyingPageRoutingModule
   ],
-  declarations: [BuyingsTabPage]
+  declarations: [BuyingPage]
 })
-export class BuyingsTabPageModule {}
+export class BuyingPageModule {}

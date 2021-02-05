@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ResultSet } from '../models/result-set';
 import { Mappers } from '../utils/mappers';
+import { SqlUtils } from '../utils/sql-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class DatabaseService {
   private database: SQLiteObject;
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  constructor(private platform: Platform, private sqlitePorter: SQLitePorter, private sqlite: SQLite, private http: HttpClient) {
+  constructor(platform: Platform, private sqlitePorter: SQLitePorter, sqlite: SQLite, private http: HttpClient) {
     platform.ready().then(() => {
       sqlite.create({
         name: 'buyings.db',
@@ -30,20 +31,35 @@ export class DatabaseService {
 
   async executeQuery(query: string, params?: any[]) {
     await this.onDbReady;
-
     return (await this.database.executeSql(query, params)) as ResultSet;
   }
 
-  async singleRowListQuery<T>(query: string, params?: any[]) {
+  async singleColumnListQuery<T>(query: string, params?: any[]) {
     await this.onDbReady;
     const result = await this.database.executeSql(query, params);
-    return Mappers.singleRowMapper<T>(result);
+    return Mappers.singleColumnMapper<T>(result);
   }
 
   async listQuery<T>(query: string, params?: any[]) {
     await this.onDbReady;
     const result = await this.database.executeSql(query, params);
     return Mappers.objectMapper<T>(result);
+  }
+
+  async objectQuery<T>(query: string, params?: any[]) {
+    await this.onDbReady;
+    const result = await this.database.executeSql(query, params);
+    return Mappers.singleRowObjectMapper<T>(result);
+  }
+
+  async insertFor<T>(entity: T, tableName: string) {
+    const {query, params} = SqlUtils.generateInsert<T>(entity, tableName);
+    return this.executeQuery(query, params);
+  }
+
+  async updateFor<T>(entity: T, tableName: string, idColumn = 'id') {
+    const {query, params} = SqlUtils.generateUpdate<T>(entity, tableName, idColumn);
+    return this.executeQuery(query, params);
   }
 
   private createDatabase() {

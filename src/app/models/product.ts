@@ -8,5 +8,6 @@ export class Product {
   lastBoughtTime?: Moment;
   salePrice?: number;
   lastTimeUpdated: string;
+  icon: string;
   deleted?: number;
 }

@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, ModalController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
-import { randomIcon } from 'src/app/utils/product-icons';
 import { ProductPage } from '../product/product.page';
 
 @Component({
@@ -11,13 +10,15 @@ import { ProductPage } from '../product/product.page';
   styleUrls: ['./products-tab.page.scss'],
 })
 export class ProductsTabPage implements OnInit {
-  products: {product: Product, icon: string}[] = [];
+  @ViewChild(IonInfiniteScroll) infinite: IonInfiniteScroll;
+
+  products: Product[] = [];
   loadedCount = 0;
 
   constructor(private modalCtrl: ModalController, private productSrv: ProductService) { }
 
   ngOnInit() {
-    this.resetProducts();
+    this.getProducts(30);
   }
 
   async showProductModal(product?: Product) {
@@ -36,27 +37,28 @@ export class ProductsTabPage implements OnInit {
   }
 
   async getProducts(quantity: number) {
-    const prods = (await this.productSrv.getProducts(quantity, this.loadedCount)).map(product => ({product, icon: randomIcon()}));
+    const prods = await this.productSrv.getProducts(quantity, this.loadedCount);
     this.products = this.products.concat(prods);
     this.loadedCount += quantity;
   }
 
-  async infiniteEvent(infinite: IonInfiniteScroll) {
+  async infiniteEvent() {
     const prevLength = this.products.length;
     await this.getProducts(20);
-    infinite.complete();
+    this.infinite.complete();
     if (prevLength === this.products.length) {
-      infinite.disabled = true;
+      this.infinite.disabled = true;
     }
   }
 
-  getProductUpdTime(index: number, {product}: {product: Product}) {
-    return product.id + product.lastTimeUpdated;
+  getProductUpdTime(index: number, product: Product) {
+    return index + product.lastTimeUpdated;
   }
 
   resetProducts() {
     this.products = [];
     this.loadedCount = 0;
     this.getProducts(30);
+    this.infinite.disabled = false;
   }
 }

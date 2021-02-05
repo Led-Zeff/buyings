@@ -7,9 +7,36 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Compras</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list>
+    <ion-item-sliding *ngFor="let item of buyings; trackBy:getBuyingId">
+      <ion-item>
+        <ion-avatar slot="start">
+          <ion-icon class="avatar-icon" [name]="item.icon"></ion-icon>
+        </ion-avatar>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ item.name }}</h2>
+          <p>{{ item.packageType | titlecase }} x{{ item.contentQuantity }}<span *ngIf="item.quantity"> - comprar {{ item.quantity | number }}</span></p>
+        </ion-label>
+        <span>{{ item.price | currency }}</span>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="confirmDelete(item)">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+        <ion-item-option (click)="showBuyingModal('edit', item.productId, item.buyingId)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-item-option>
+        <ion-item-option color="success" (click)="showBuyingModal('buy', item.productId, item.buyingId)">
+          <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="showSelectProductModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

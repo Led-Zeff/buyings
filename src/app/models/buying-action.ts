@@ -1,0 +1,1 @@
+export type BuyingAction = 'add' | 'edit' | 'buy';

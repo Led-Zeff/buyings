@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Compra</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="buyingForm" (ngSubmit)="save()">
+    <ion-list lines="full">
+      <ion-item (click)="showSelectProductModal()">
+        <ion-avatar slot="start">
+          <ion-icon class="avatar-icon" [name]="product?.icon"></ion-icon>
+        </ion-avatar>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ product?.name }}</h2>
+          <p>{{ product?.packageType | titlecase }} x{{ product?.contentQuantity }}</p>
+        </ion-label>
+        <span>{{ product?.salePrice | currency }}</span>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Cantidad</ion-label>
+        <ion-input formControlName="quantity" inputmode='numeric' [clearInput]="true"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Precio de compra</ion-label>
+        <ion-input formControlName="price" inputmode='numeric' [clearInput]="true"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Precio de compra unitario</ion-label>
+        <span>{{ unitPrice$ | async | currency }}</span>
+      </ion-item>
+
+      <ion-item *ngIf="action !== 'buy'">
+        <ion-label>Ya comprado</ion-label>
+        <ion-toggle formControlName="isBought"></ion-toggle>
+      </ion-item>
+
+      <div *ngIf="buyingForm.controls.isBought.value">
+        <ion-item>
+          <ion-label position="stacked">Precio de venta unitario</ion-label>
+          <ion-input formControlName="unitSalePrice"></ion-input>
+        </ion-item>
+  
+        <ion-item>
+          <ion-label>Precio de venta propuesto</ion-label>
+          <span style="margin-right: 16px;">{{ proposedUnitSalePrice | currency }}</span>
+          <ion-icon *ngIf="proposedUnitSalePrice" name="copy-outline" (click)="buyingForm.controls.unitSalePrice.setValue(proposedUnitSalePrice)"></ion-icon>
+        </ion-item>
+      </div>
+    </ion-list>
+
+    <ion-button (click)="save()" color="primary" expand="block" style="margin-top: 20px">
+      <ion-icon slot="start" name="save"></ion-icon>
+      Guardar
+    </ion-button>
+  </form>
+</ion-content>

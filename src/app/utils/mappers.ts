@@ -1,7 +1,7 @@
 import { ResultSet } from "../models/result-set";
 
 export class Mappers {
-  static singleRowMapper<T>(resultSet: ResultSet): T[] {
+  static singleColumnMapper<T>(resultSet: ResultSet): T[] {
     const items: T[] = [];
     if (resultSet.rows.length > 0) {
       for (let index = 0; index < resultSet.rows.length; index++) {
@@ -29,6 +29,21 @@ export class Mappers {
       }
     }
     return items;
+  }
+
+  static singleRowObjectMapper<T>(resultSet: ResultSet): T {
+    if (resultSet.rows.length > 0) {
+      const keys = this.getKeys(resultSet.rows.item(0));
+      if (keys.length > 1) {
+        const item = {};
+        for (const key of keys) {
+          item[key.camelCase] = resultSet.rows.item(0)[key.key];
+        }
+        return item as T;
+      } else {
+        return resultSet.rows.item(0)[0];
+      }
+    }
   }
 
   private static getKeys(obj: any) {
