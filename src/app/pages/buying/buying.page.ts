@@ -10,6 +10,7 @@ import { Product } from 'src/app/models/product';
 import { BuyingService } from 'src/app/services/buying.service';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
+import { SqlUtils } from 'src/app/utils/sql-utils';
 import { SearchProductPage } from '../search-product/search-product.page';
 
 @Component({
@@ -89,7 +90,7 @@ export class BuyingPage implements OnInit, OnDestroy {
 
         if (this.productPrices) { // set proposed sale price
           const previousMargin = this.productPrices.unitSalePrice * 100 / this.productPrices.unitPrice;
-          this.proposedUnitSalePrice = unitPrice / 100 * previousMargin;
+          this.proposedUnitSalePrice = Number((unitPrice / 100 * previousMargin).toFixed(2));
         }
 
         return unitPrice;
@@ -122,7 +123,8 @@ export class BuyingPage implements OnInit, OnDestroy {
     if (this.buyingForm.valid) {
       const buying: Buying = {
         ...this.buyingForm.value,
-        isBought: this.buyingForm.value.isBought ? 1 : 0
+        isBought: this.buyingForm.value.isBought ? 1 : 0,
+        boughtTime: this.buyingForm.value.isBought ? SqlUtils.now() : null
       };
 
       switch (this.action) {
@@ -132,6 +134,7 @@ export class BuyingPage implements OnInit, OnDestroy {
           break;
 
         case 'edit':
+        case 'buy':
           const id = await this.buyingSrv.update(buying)
           this.dismissModal(id);
           break;

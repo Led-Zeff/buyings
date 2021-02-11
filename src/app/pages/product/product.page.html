@@ -10,18 +10,26 @@
 
 <ion-content>
   <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-    <ion-list>
+    <ion-list lines="full">
       <ion-item>
         <ion-label position="stacked">Nombre</ion-label>
         <ion-input formControlName="name" type="text" [clearInput]="true"></ion-input>
       </ion-item>
   
       <ion-item-sliding #slider>
-        <ion-item>
+        <ion-item *ngIf="packages?.length > 4">
           <ion-label position="stacked">Tipo</ion-label>
           <ion-select formControlName="packageType">
             <ion-select-option [value]="package" *ngFor="let package of packages">{{ package | titlecase }}</ion-select-option>
           </ion-select>
+        </ion-item>
+
+        <ion-item *ngIf="packages?.length <= 4">
+          <ion-segment formControlName="packageType" mode="ios">
+            <ion-segment-button *ngFor="let package of packages" [value]="package">
+              <ion-label>{{ package }}</ion-label>
+            </ion-segment-button>
+          </ion-segment>
         </ion-item>
 
         <ion-item-options side="end">
@@ -40,7 +48,7 @@
       </ion-item>
     </ion-list>
 
-    <ion-button *ngIf="product?.id" (click)="confirmDelete()" color="danger" expand="block" style="margin-top: 20px">
+    <ion-button *ngIf="product?.id" (click)="deleteProduct()" color="danger" expand="block" style="margin-top: 20px">
       <ion-icon slot="start" name="trash-outline"></ion-icon>
       Eliminar
     </ion-button>

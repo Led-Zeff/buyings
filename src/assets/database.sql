@@ -1,6 +1,7 @@
-drop INDEX "IX_Buying_ProductId";
-drop table buying;
-drop table product;
+drop INDEX IF EXISTS "IX_Buying_ProductId";
+drop table if exists buying;
+drop table if exists product;
+drop table if exists product_fts;
 
 CREATE TABLE IF NOT EXISTS product (
   id TEXT NOT NULL PRIMARY KEY,
@@ -12,6 +13,14 @@ CREATE TABLE IF NOT EXISTS product (
   last_time_updated TEXT DEFAULT CURRENT_TIMESTAMP,
   icon TEXT,
   deleted INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS product_fts USING fts5(
+  id unindexed,
+  "name",
+  package_type,
+  content_quantity,
+  content = 'product'
 );
 
 CREATE TABLE IF NOT EXISTS buying (
@@ -31,7 +40,14 @@ CREATE TABLE IF NOT EXISTS packaging (
   package_type TEXT NOT NULL PRIMARY KEY
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+  id TEXT NOT NULL PRIMARY KEY,
+  "value" TEXT
+);
+
 CREATE INDEX IF NOT EXISTS "IX_Buying_ProductId" ON "buying" ("product_id");
+
+insert into buying (id, product_id, is_bought, bought_time, quantity, price, unit_price, unit_sale_price) values ('506AF5EF-79D3-FF56-1D89-25D145A05CB4', '506AF5EF-79D3-FF56-1D89-25D145A05CB4', 1, '2021-02-08 18:43:23', 1, 232.32, 2, 3);
 
 INSERT INTO packaging
   SELECT 'PIEZA' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'PIEZA')
@@ -39,6 +55,9 @@ INSERT INTO packaging
   SELECT 'KILO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'KILO')
   UNION
   SELECT 'LITRO' WHERE NOT EXISTS(SELECT 1 FROM packaging WHERE package_type = 'LITRO');
+
+INSERT INTO settings
+  SELECT 'db.version', 1 WHERE NOT EXISTS(SELECT 1 FROM settings WHERE id = 'db.version');
 
 delete from product;
 INSERT INTO `product` (`id`,`name`,`package_type`,`content_quantity`,`icon`) VALUES ("506AF5EF-79D3-FF56-1D89-25D145A05CB4","Lindsay, Laith M.","LITRO",68,"pricetag-outline"),("3203C29C-DB35-0C76-E03D-E1726315459D","Hudson, Genevieve V.","LITRO",100,"water-outline"),("71F2A289-B360-744A-A32D-1CDDCAD29422","Russo, Tallulah L.","KILO",7,"cube-outline"),("9C170B6E-0ECD-67D4-5B65-14FD7AC2BB28","Bonner, Bradley A.","LITRO",81,"water-outline"),("78557146-DC58-0FD6-6A44-4555B7037AD4","Guerra, Brody M.","KILO",67,"cube-outline"),("6CB92AA7-22D5-576C-7A5F-13BB076BDC65","Booth, Odessa W.","KILO",96,"cube-outline"),("6148546A-5272-48C8-90DA-A5C67194C207","Villarreal, Ruby A.","KILO",83,"water-outline"),("754AE51F-874E-80DA-3296-453BCF9A6EE7","Carlson, Cooper A.","PIEZA",80,"water-outline"),("112DF983-0C05-C407-6334-F52935AA9772","Mcmahon, Hayley A.","PIEZA",82,"water-outline"),("CFFA5752-3B09-827B-1120-405FD6B5AD9F","Gaines, Briar O.","LITRO",75,"cube-outline");
@@ -51,3 +70,8 @@ INSERT INTO `product` (`id`,`name`,`package_type`,`content_quantity`,`icon`) VAL
 INSERT INTO `product` (`id`,`name`,`package_type`,`content_quantity`,`icon`) VALUES ("85DEB62D-3C2F-5996-253D-C19BDCB1F462","Petersen, Emma F.","KILO",43,"water-outline"),("360AB04D-06D3-E5FF-1037-61670550F8D7","Conner, Aurora U.","KILO",70,"cube-outline"),("99183ACC-25AD-8BFB-1030-5B7960342F36","Williams, Bevis T.","KILO",82,"water-outline"),("61A524A7-5089-36B9-CF70-F4A28740110F","Mejia, Naida H.","LITRO",76,"pricetag-outline"),("30762F12-1719-F87E-C6AA-6C79E6A14E1F","Solomon, Tatiana D.","PIEZA",34,"cube-outline"),("C985FFFC-2FCD-93C0-BA33-B8D0AD4D7582","House, Harriet V.","LITRO",56,"cube-outline"),("A0125846-83D4-2B3B-5031-F443C6BEF560","Sykes, Brandon N.","LITRO",2,"water-outline"),("D4D794E3-F913-1796-A8C1-87EECF54EE13","Houston, Yasir X.","LITRO",22,"cube-outline"),("AD909771-14F5-E6AB-9B31-0EC130020C0C","Sawyer, Darryl O.","LITRO",32,"water-outline"),("DE4036AC-5FB5-16A4-0AA5-011B42DD8E5E","Serrano, Anthony H.","KILO",15,"water-outline");
 INSERT INTO `product` (`id`,`name`,`package_type`,`content_quantity`,`icon`) VALUES ("5606968D-FA4A-BFEB-4B1E-4E88AA68FB86","Ashley, Freya G.","PIEZA",4,"cube-outline"),("22076FC2-117F-A09D-694A-817F47745F64","Foster, Evan M.","KILO",25,"pricetag-outline"),("FD960ADD-BC19-7BA9-7456-F625139DBD48","Dalton, Ifeoma Z.","KILO",57,"water-outline"),("356B070B-8D35-B4AC-DE6B-6BC129DB14B7","Grant, Maile X.","KILO",49,"pricetag-outline"),("C541AC7A-E2E6-AACB-C872-91BFC0A17E9D","Vincent, Evan U.","KILO",50,"cube-outline"),("27708CDE-39BE-A7E0-004F-A3A1B519BB45","Newman, Justina W.","PIEZA",20,"water-outline"),("EF5AE141-3103-5C6C-127F-0ED0215690D0","Villarreal, Ocean P.","PIEZA",67,"cube-outline"),("EFE1A324-7121-5243-224E-C8A5BD5AA9B8","Hahn, Hilda V.","KILO",33,"water-outline"),("EA3F92B2-A04A-05F3-7A99-818F564821AC","Spence, Harper E.","PIEZA",76,"cube-outline"),("4E0E732A-2C78-C3AB-D484-25B30C18DE20","Murphy, Ishmael D.","LITRO",46,"water-outline");
 INSERT INTO `product` (`id`,`name`,`package_type`,`content_quantity`,`icon`) VALUES ("CC9A6809-F0D6-F014-CF24-663DCAF32230","Stephenson, Justina D.","KILO",77,"water-outline"),("C205F25D-BBA7-7E1A-F4A9-9397FEB8C429","Hunt, Whoopi Y.","PIEZA",22,"pricetag-outline"),("DBA1D990-9B71-C582-349D-B38D30DA1EDD","Mcmahon, Kalia A.","LITRO",43,"pricetag-outline"),("D777B1E1-7CE3-14A9-B7DA-B1DE1D0F54DB","Webb, Troy Y.","PIEZA",3,"cube-outline"),("D859DC1D-7582-372F-0037-7397E385A90D","Stokes, Thane Z.","LITRO",73,"cube-outline"),("B8BE2D6D-23B0-72E7-F475-D3C05AC48528","Shelton, Heidi C.","KILO",41,"pricetag-outline"),("922CBCD0-3C3D-0552-C1F3-5B06D6C3755A","Gould, Mercedes G.","KILO",41,"water-outline"),("12ED6358-6D6F-A862-C561-64B8C563F2D3","Burns, Todd G.","KILO",69,"water-outline"),("DC359968-BAF8-8430-942E-04896FC66C16","Nelson, Madeline C.","LITRO",64,"cube-outline"),("97746474-87DC-54D4-4D57-FE9F6E5BFB41","Jimenez, Ebony A.","KILO",50,"water-outline");
+
+-- delete from product_fts;
+-- insert into product_fts (id, "name", package_type, content_quantity) select id, "name", package_type, content_quantity from product;
+-- insert into product_fts(product_fts) values ('integrity-check');
+insert into product_fts(product_fts) values ('rebuild');

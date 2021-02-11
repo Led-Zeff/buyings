@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { v4 } from 'uuid';
 import { Product } from '../models/product';
+import { SqlUtils } from '../utils/sql-utils';
 import { DatabaseService } from './database.service';
 
 @Injectable({
@@ -22,19 +23,26 @@ export class ProductService {
 
   async newProduct(product: Product): Promise<string> {
     const id = v4();
-    await this.dbSrv.executeQuery('insert into product(id, "name", package_type, content_quantity, sale_price, icon) values (?,?,?,?,?,?)',
-      [id, product.name, product.packageType, product.contentQuantity, product.salePrice, product.icon]);
+    await this.dbSrv.insertFor({ ...product, id, lastTimeUpdated: SqlUtils.now() }, 'product');
+    await this.insertIntoFts(id);
     return id;
   }
   
   async updateProduct(product: Product): Promise<string> {
-    await this.dbSrv.executeQuery('update product set "name" = ?, package_type = ?, content_quantity = ?, sale_price = ?, last_time_updated = datetime(\'now\'), icon = ? where id = ?',
-      [product.name, product.packageType, product.contentQuantity, product.salePrice, product.icon, product.id]);
+    await this.deleteFromFts(product.id);
+    await this.dbSrv.updateFor({ ...product, lastTimeUpdated: SqlUtils.now() }, 'product');
+    await this.insertIntoFts(product.id);
     return product.id;
   }
   
-  async deleteProduct(productId: string): Promise<void> {
-    await this.dbSrv.executeQuery('delete from product where id = ?', [productId]);
+  async deactivateProduct(productId: string): Promise<void> {
+    await this.dbSrv.executeQuery('update product set deleted = 1 where id = ?', [productId]);
+    await this.deleteFromFts(productId);
+  }
+  
+  async reactivateProduct(productId) {
+    await this.dbSrv.executeQuery('update product set deleted = 0 where id = ?', [productId]);
+    await this.insertIntoFts(productId);
   }
 
   async getProducts(limit: number, offset: number) {
@@ -42,10 +50,23 @@ export class ProductService {
   }
   
   async findProducts(filter: string, limit: number, offset: number) {
-    return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 and "name" like \'%\' || ? || \'%\' order by "name" limit ? offset ?', [filter, limit, offset]);
+    const tokens = SqlUtils.buildTokens(filter);
+    if (tokens === '\'\'') {
+      return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by "name" limit ? offset ?', [limit, offset]);
+    } else {
+      return this.dbSrv.listQuery<Product>('select p.* from product_fts fts inner join product p on fts.id = p.id where product_fts match ' + tokens + ' order by rank limit ? offset ?', [limit, offset]);
+    }
   }
 
   async findById(productId: string) {
     return this.dbSrv.objectQuery<Product>('select * from product where id = ?', [productId]);
+  }
+
+  private async insertIntoFts(productId: string) {
+    await this.dbSrv.executeQuery('insert into product_fts(rowid, id, "name", package_type, content_quantity) select rowid, id, "name", package_type, content_quantity from product where id = ?', [productId]);
+  }
+
+  private async deleteFromFts(productId: string) {
+    await this.dbSrv.executeQuery('insert into product_fts(product_fts, rowid, id, "name", package_type, content_quantity) select \'delete\', rowid, id, "name", package_type, content_quantity from product where id = ?', [productId]);
   }
 }

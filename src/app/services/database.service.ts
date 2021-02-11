@@ -62,11 +62,15 @@ export class DatabaseService {
     return this.executeQuery(query, params);
   }
 
+  async exportDatabase() {
+    console.log(typeof await this.sqlitePorter.exportDbToSql(this.database));
+  }
+
   private createDatabase() {
     this.http.get('assets/database.sql', { responseType: 'text' }).subscribe(sql => {
-      this.sqlitePorter.importSqlToDb(this.database, sql).then(() =>
-        this.dbReady.next(true)
-      );
+      this.sqlitePorter.importSqlToDb(this.database, sql).then(async () => {
+        this.dbReady.next(true);
+      });
     });
   }
 

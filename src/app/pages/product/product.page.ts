@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
-import { icons, randomIcon } from 'src/app/utils/product-icons';
+import { randomIcon } from 'src/app/utils/product-icons';
 
 @Component({
   selector: 'app-product',
@@ -32,7 +32,7 @@ export class ProductPage implements OnInit {
       lastBoughtTime: [],
       salePrice: [null, [CustomValidators.decimal] ],
       lastTimeUpdated: [],
-      deleted: []
+      deleted: [0]
     });
 
     await this.loadPackages();
@@ -76,41 +76,20 @@ export class ProductPage implements OnInit {
     this.productForm.markAllAsTouched();
     if (this.productForm.valid) {
       let id: string;
-      const prod: Product = {...this.productForm.value, icon: icons[this.productForm.value.packageType] || randomIcon()};
+      const prod: Product = {...this.productForm.value, icon: this.icons[this.productForm.value.packageType] || randomIcon()};
       if (!this.product?.id) {
         id = await this.productSrv.newProduct(prod);
       } else {
         id = await this.productSrv.updateProduct(prod);
       }
-      this.dismissModal(id);
+      this.dismissModal('edit', id);
     }
   }
 
-  async confirmDelete() {
-    const alert = await this.alertCtrl.create({
-      subHeader: `Eliminar producto ${this.productForm.value.name}`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        }, {
-          text: 'Eliminar',
-          cssClass: 'danger',
-          handler: () => {
-            this.deleteProduct();
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  private async deleteProduct() {
+  async deleteProduct() {
     if (this.product?.id) {
-      await this.productSrv.deleteProduct(this.product.id);
-      this.dismissModal('deleted');
+      await this.productSrv.deactivateProduct(this.product.id);
+      this.dismissModal('delete', this.product.id);
     }
   }
 
@@ -122,7 +101,7 @@ export class ProductPage implements OnInit {
     }
   }
 
-  dismissModal(productId?: string) {
-    this.modalCtrl.dismiss({ productId });
+  dismissModal(action?: string, productId?: string) {
+    this.modalCtrl.dismiss({ action, productId });
   }
 }

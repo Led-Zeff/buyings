@@ -4,9 +4,17 @@
       Productos
     </ion-title>
   </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar debounce="300" animated placeholder="Buscar" (ionChange)="search($event)" mode="ios"></ion-searchbar>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-list>
     <ion-item *ngFor="let item of products; trackBy:getProductUpdTime" button (click)="showProductModal(item)">
       <ion-avatar slot="start">

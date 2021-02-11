@@ -1,13 +1,11 @@
-import { Moment } from "moment"
-
 export interface Buying {
   id: string;
   productId: string;
   isBought: number;
-  boughtTime?: Moment;
+  boughtTime?: string;
   quantity?: number;
   price?: number;
   unitPrice?: number;
   unitSalePrice?: number;
-  lastTimeUpdated: Moment;
+  lastTimeUpdated: string;
 }

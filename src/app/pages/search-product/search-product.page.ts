@@ -13,6 +13,7 @@ export class SearchProductPage implements OnInit {
   
   products: Product[] = [];
   loadedCount = 0;
+  filter = '';
 
   constructor(private productSrv: ProductService, private modalCtrl: ModalController) { }
 
@@ -21,12 +22,13 @@ export class SearchProductPage implements OnInit {
   }
 
   search(event: CustomEvent) {
+    this.filter = event.detail.value
     this.resetProducts();
-    this.getProducts(30, event.detail.value);
+    this.getProducts(30);
   }
 
-  async getProducts(quantity: number, filter = '') {
-    const prods = await this.productSrv.findProducts(filter, quantity, this.loadedCount);
+  async getProducts(quantity: number) {
+    const prods = await this.productSrv.findProducts(this.filter, quantity, this.loadedCount);
     this.products = this.products.concat(prods);
     this.loadedCount += quantity;
   }
@@ -48,5 +50,9 @@ export class SearchProductPage implements OnInit {
 
   dismissModal(productId: string) {
     this.modalCtrl.dismiss({ productId });
+  }
+
+  getProductId(index: number, product: Product) {
+    return product.id + product.lastTimeUpdated;
   }
 }

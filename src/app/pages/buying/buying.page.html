@@ -50,8 +50,9 @@
   
         <ion-item>
           <ion-label>Precio de venta propuesto</ion-label>
-          <span style="margin-right: 16px;">{{ proposedUnitSalePrice | currency }}</span>
-          <ion-icon *ngIf="proposedUnitSalePrice" name="copy-outline" (click)="buyingForm.controls.unitSalePrice.setValue(proposedUnitSalePrice)"></ion-icon>
+          <span *ngIf="proposedUnitSalePrice">{{ proposedUnitSalePrice | currency }}</span>
+          <ion-icon *ngIf="proposedUnitSalePrice" slot="end" name="copy-outline" (click)="buyingForm.controls.unitSalePrice.setValue(proposedUnitSalePrice)"></ion-icon>
+          <ion-note *ngIf="!proposedUnitSalePrice" slot="end">No disponible</ion-note>
         </ion-item>
       </div>
     </ion-list>
