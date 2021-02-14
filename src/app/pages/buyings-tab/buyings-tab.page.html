@@ -23,7 +23,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <ion-list *ngIf="buyings?.length > 0">
     <ion-item-sliding *ngFor="let item of buyings; trackBy:getBuyingId">
       <ion-item>

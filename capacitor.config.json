@@ -1,5 +1,5 @@
 {
-  "appId": "io.ionic.starter",
+  "appId": "pollos.gordos",
   "appName": "buyings",
   "bundledWebRuntime": false,
   "npmClient": "npm",
@@ -9,5 +9,7 @@
       "launchShowDuration": 0
     }
   },
-  "cordova": {}
+  "cordova": {
+    "preferences": {}
+  }
 }

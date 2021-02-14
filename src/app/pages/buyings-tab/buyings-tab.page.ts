@@ -7,6 +7,7 @@ import { BuyingDate } from 'src/app/models/buying-date';
 import { BuyingOverview } from 'src/app/models/buying-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { DatabaseService } from 'src/app/services/database.service';
+import { FileService } from 'src/app/services/file.service';
 import { BuyingPage } from '../buying/buying.page';
 import { SearchProductPage } from '../search-product/search-product.page';
 
@@ -31,7 +32,8 @@ export class BuyingsTabPage implements OnInit {
     private buyingSrv: BuyingService,
     private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
-    private databaseSrv: DatabaseService) { }
+    private databaseSrv: DatabaseService,
+    private fileSrv: FileService) { }
 
   ngOnInit() {
     this.getBuyings();
@@ -152,7 +154,10 @@ export class BuyingsTabPage implements OnInit {
         handler: () => this.toBuySelectionMode = true
       }, {
         text: 'Exportar base de datos',
-        handler: () => this.databaseSrv.exportDatabase()
+        handler: () => this.exportHandler()
+      }, {
+        text: 'Importar base de datos',
+        handler: async () => this.importHandler()
       }, {
         text: 'Cancelar',
         role: 'cancel'
@@ -160,6 +165,34 @@ export class BuyingsTabPage implements OnInit {
     });
 
     await sheet.present();
+  }
+
+  async importHandler() {
+    await this.databaseSrv.importDatabase();
+    const toast = await this.toastCtrl.create({
+      message: 'Base de datos importada correctamente',
+      duration: 5000,
+      buttons: [{ icon: 'close', side: 'start' }]
+    });
+    toast.present();
+  }
+
+  async exportHandler() {
+    const createdFilePath = await this.databaseSrv.exportDatabase();
+    const toast = await this.toastCtrl.create({
+      message: 'Archivo creado',
+      duration: 20000,
+      buttons: [{
+        side: 'start',
+        icon: 'close'
+      }, {
+        side: 'end',
+        text: 'Compartir',
+        handler: () => this.fileSrv.shareFile('Database file', createdFilePath)
+      }]
+    });
+
+    await toast.present();
   }
 
   async deleteBuyings() {

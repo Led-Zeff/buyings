@@ -1,0 +1,5 @@
+<edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application/provider">
+  <provider android:authorities="${applicationId}.sharing.provider" android:exported="false" android:grantUriPermissions="true" android:name="nl.xservices.plugins.FileProvider">
+    <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/sharing_paths" />
+  </provider>
+</edit-config>

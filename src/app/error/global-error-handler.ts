@@ -8,7 +8,7 @@ export class GlobarErrorHandler implements ErrorHandler {
 
   async handleError(error: Error): Promise<void> {
     console.error(error);
-    const toast = await this.toastCtrl.create({ message: 'Ocurrió un error', color: 'danger', buttons: [{ text: 'Cerrar' }] });
+    const toast = await this.toastCtrl.create({ message: 'System failure', color: 'danger', buttons: [{ text: 'Cerrar' }] });
     this.zone.run(() => toast.present());
   }
 

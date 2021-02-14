@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
-import { Platform } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, share } from 'rxjs/operators';
 import { ResultSet } from '../models/result-set';
 import { Mappers } from '../utils/mappers';
 import { SqlUtils } from '../utils/sql-utils';
+import { FileService } from './file.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,13 @@ export class DatabaseService {
   private database: SQLiteObject;
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  constructor(platform: Platform, private sqlitePorter: SQLitePorter, sqlite: SQLite, private http: HttpClient) {
+  constructor(platform: Platform,
+    private sqlitePorter: SQLitePorter,
+    sqlite: SQLite,
+    private http: HttpClient,
+    private fileSrv: FileService,
+    private toastCtrl: ToastController
+  ) {
     platform.ready().then(() => {
       sqlite.create({
         name: 'buyings.db',
@@ -62,8 +69,28 @@ export class DatabaseService {
     return this.executeQuery(query, params);
   }
 
-  async exportDatabase() {
-    console.log(typeof await this.sqlitePorter.exportDbToSql(this.database));
+  async exportDatabase(): Promise<string> {
+    const db = await this.sqlitePorter.exportDbToSql(this.database);
+    const dbFile = await this.fileSrv.createFile(db);
+    const externalFile = await this.fileSrv.sendFileToExternalDrive(dbFile);
+    this.fileSrv.deleteFile(dbFile);
+    return externalFile;
+  }
+
+  async importDatabase() {
+    const path = await this.fileSrv.pickFile();
+    const script = await this.fileSrv.readFile(path);
+    const prepared = this.prepareScript(script);
+    await this.sqlitePorter.importSqlToDb(this.database, prepared);
+  }
+
+  private prepareScript(dbScript: string) {
+    const toRemoveReferences = ['`\'product_fts_data\'`', '\'product_fts_data\'', '`\'product_fts_idx\'`', '\'product_fts_idx\'',
+                                '`\'product_fts_docsize\'`', '\'product_fts_docsize\'', '`\'product_fts_config\'`', '\'product_fts_config\'',
+                                'INSERT OR REPLACE INTO `product_fts`', '`product_fts_data`', '`product_fts_idx`', '`product_fts_docsize`',
+                                '`product_fts_config`'];
+    const sanitized = dbScript.split('\n').filter(script => script && !toRemoveReferences.some(r => script.includes(r)));
+    return ['DROP TABLE IF EXISTS product_fts;', ...sanitized, 'INSERT INTO product_fts(product_fts) VALUES (\'rebuild\');', ''].join('\n');
   }
 
   private createDatabase() {
