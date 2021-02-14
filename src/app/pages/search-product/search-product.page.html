@@ -16,6 +16,15 @@
       </ion-label>
       <span>{{ item.salePrice | currency }}</span>
     </ion-item>
+
+    <ion-item *ngIf="products?.length === 0" (click)="createProductModal()">
+      <ion-avatar slot="start">
+        <ion-icon class="avatar-icon" name="add-circle-outline" color="primary"></ion-icon>
+      </ion-avatar>
+      <ion-label class="ion-text-wrap">
+        <h2><i>{{ filter }}</i></h2>
+      </ion-label>
+    </ion-item>
   </ion-list>
 
   <ion-infinite-scroll treshold='200px' (ionInfinite)="infiniteEvent()">
