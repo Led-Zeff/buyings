@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';

@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { Observable, merge, Subscription } from 'rxjs';
-import { filter, map, startWith } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
 import { Prices } from 'src/app/models/prices';

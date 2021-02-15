@@ -24,12 +24,12 @@
 
       <ion-item>
         <ion-label position="stacked">Cantidad</ion-label>
-        <ion-input formControlName="quantity" inputmode='numeric' [clearInput]="true"></ion-input>
+        <ion-input formControlName="quantity" inputmode="numeric" [clearInput]="true"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Precio de compra</ion-label>
-        <ion-input formControlName="price" inputmode='numeric' [clearInput]="true"></ion-input>
+        <ion-input formControlName="price" inputmode="numeric" [clearInput]="true"></ion-input>
       </ion-item>
 
       <ion-item>
@@ -45,7 +45,7 @@
       <div *ngIf="buyingForm.controls.isBought.value">
         <ion-item>
           <ion-label position="stacked">Precio de venta unitario</ion-label>
-          <ion-input formControlName="unitSalePrice"></ion-input>
+          <ion-input formControlName="unitSalePrice" inputmode="numeric"></ion-input>
         </ion-item>
   
         <ion-item>
