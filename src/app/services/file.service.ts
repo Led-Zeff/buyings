@@ -41,7 +41,7 @@ export class FileService {
   }
   
   async sendFileToExternalDrive(fileEntry: FileEntry): Promise<string> {
-    // I wasm't able to crete it directly in the extarnal storage
+    // I wasn't able to crete it directly in the extarnal storage
     await this.checkPermission('READ_EXTERNAL_STORAGE');
     const newFile = `${this.file.externalRootDirectory}/Download/${fileEntry.name}`;
     await this.fileTransferObj.download(fileEntry.nativeURL, newFile);
@@ -53,6 +53,7 @@ export class FileService {
   }
 
   async readFile(nativePath: string): Promise<string> {
+    await this.checkPermission('READ_EXTERNAL_STORAGE');
     return new Promise(async (resolve, reject) => {
       const fileEntry = await this.file.resolveLocalFilesystemUrl(nativePath) as FileEntry;
       fileEntry.file(f => {
