@@ -46,6 +46,7 @@ INSERT OR REPLACE INTO packaging(`package_type`) VALUES ('KILO');
 INSERT OR REPLACE INTO packaging(`package_type`) VALUES ('LITRO');
 INSERT OR REPLACE INTO packaging(`package_type`) VALUES ('PIEZA');
 
-INSERT OR REPLACE INTO settings(id,value) VALUES ('db.version','1');
+INSERT INTO settings
+  SELECT 'db.version', 1 WHERE NOT EXISTS(SELECT 1 FROM settings WHERE id = 'db.version');
 
 INSERT INTO product_fts(product_fts) VALUES ('rebuild');
