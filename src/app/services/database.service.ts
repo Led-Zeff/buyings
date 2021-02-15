@@ -71,7 +71,8 @@ export class DatabaseService {
 
   async exportDatabase(): Promise<string> {
     const db = await this.sqlitePorter.exportDbToSql(this.database);
-    const dbFile = await this.fileSrv.createFile(db);
+    const prepared = this.prepareScript(db);
+    const dbFile = await this.fileSrv.createFile(prepared);
     const externalFile = await this.fileSrv.sendFileToExternalDrive(dbFile);
     this.fileSrv.deleteFile(dbFile);
     return externalFile;
@@ -80,8 +81,7 @@ export class DatabaseService {
   async importDatabase() {
     const path = await this.fileSrv.pickFile();
     const script = await this.fileSrv.readFile(path);
-    const prepared = this.prepareScript(script);
-    await this.sqlitePorter.importSqlToDb(this.database, prepared);
+    await this.sqlitePorter.importSqlToDb(this.database, script);
   }
 
   private prepareScript(dbScript: string) {
