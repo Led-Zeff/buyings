@@ -16,6 +16,7 @@ import { FileService } from './file.service';
 export class DatabaseService {
   private database: SQLiteObject;
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  private dbImported: BehaviorSubject<void> = new BehaviorSubject(null);
 
   constructor(platform: Platform,
     private sqlitePorter: SQLitePorter,
@@ -33,6 +34,10 @@ export class DatabaseService {
         this.updateDatabase();
       })
     });
+  }
+
+  get onDbImported() {
+    return this.dbImported.asObservable();
   }
 
   async executeQuery(query: string, params?: any[]) {
@@ -83,6 +88,8 @@ export class DatabaseService {
     const path = await this.fileSrv.pickFile();
     const script = await this.fileSrv.readFile(path);
     await this.sqlitePorter.importSqlToDb(this.database, script);
+    await this.updateDatabase();
+    this.dbImported.next();
   }
 
   private prepareScript(dbScript: string) {

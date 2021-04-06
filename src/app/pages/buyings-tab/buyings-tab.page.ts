@@ -1,12 +1,12 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonList, ModalController, ToastController } from '@ionic/angular';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { IonList, ModalController, ToastController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
 import { BuyingDate } from 'src/app/models/buying-date';
 import { BuyingOverview } from 'src/app/models/buying-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { DatabaseService } from 'src/app/services/database.service';
-import { FileService } from 'src/app/services/file.service';
 import { BuyingPage } from '../buying/buying.page';
 import { SearchProductPage } from '../search-product/search-product.page';
 
@@ -18,9 +18,10 @@ const TO_BUY = 'to_buy';
   templateUrl: './buyings-tab.page.html',
   styleUrls: ['./buyings-tab.page.scss'],
 })
-export class BuyingsTabPage implements OnInit {
+export class BuyingsTabPage implements OnInit, OnDestroy {
   @ViewChild(IonList) ionList: IonList;
 
+  subscription = new Subscription();
   buyings: BuyingOverview[];
   totalToBuy = 0;
   previuos: BuyingDate[];
@@ -35,12 +36,21 @@ export class BuyingsTabPage implements OnInit {
 
   constructor(private modalCtrl: ModalController,
     private buyingSrv: BuyingService,
-    private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
-    private databaseSrv: DatabaseService,
-    private fileSrv: FileService) { }
+    private dbSrv: DatabaseService) { }
 
   ngOnInit() {
+    this.init();
+
+    const s = this.dbSrv.onDbImported.subscribe(() => this.init());
+    this.subscription.add(s);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+  
+  private init() {
     this.getBuyings();
     this.getPreviousLists();
   }
@@ -134,6 +144,7 @@ export class BuyingsTabPage implements OnInit {
     if (this.someIsTrue(this.toBuyChecks)) {
       this.toBuySelectionMode = true;
       this.selectionModeTarget.set(TO_BUY);
+      this.showFab = true;
     } else {
       this.toBuySelectionMode = false;
       this.selectionModeTarget.delete(TO_BUY);
@@ -173,57 +184,11 @@ export class BuyingsTabPage implements OnInit {
     }
   }
 
-  async showActionSheet() {
-    const sheet = await this.actionSheetCtrl.create({
-      buttons: [{
-        text: 'Editar',
-        handler: () => this.toBuySelectionMode = true
-      }, {
-        text: 'Exportar base de datos',
-        handler: () => this.exportHandler()
-      }, {
-        text: 'Importar base de datos',
-        handler: async () => this.importHandler()
-      }, {
-        text: 'Cancelar',
-        role: 'cancel'
-      }]
-    });
-
-    await sheet.present();
-  }
-
-  async importHandler() {
-    await this.databaseSrv.importDatabase();
-    const toast = await this.toastCtrl.create({
-      message: 'Base de datos importada correctamente',
-      duration: 5000,
-      buttons: [{ icon: 'close', side: 'start' }]
-    });
-    toast.present();
-  }
-
-  async exportHandler() {
-    const createdFilePath = await this.databaseSrv.exportDatabase();
-    const toast = await this.toastCtrl.create({
-      message: 'Archivo creado',
-      duration: 20000,
-      buttons: [{
-        side: 'start',
-        icon: 'close'
-      }, {
-        side: 'end',
-        text: 'Compartir',
-        handler: () => this.fileSrv.shareFile('Database file', createdFilePath)
-      }]
-    });
-
-    await toast.present();
-  }
-
   async deleteBuyings() {
     const groups = Array.from(this.selectionModeTarget.keys());
     const selected = this.getAllIds(groups);
+    if (selected.length === 0) return;
+
     await this.doDelete(selected);
     this.clearAllSelections();
   }
@@ -259,11 +224,13 @@ export class BuyingsTabPage implements OnInit {
       const group = this.groupSelections[groupId];
       group.items[item] = !group.items[item];
       group.selecting = this.someIsTrue(group.items);
-      if (group.selecting) {
-        this.selectionModeTarget.set(groupId);
-      } else {
-        this.selectionModeTarget.delete(groupId);
-      }
+    }
+
+    if (this.groupSelections[groupId].selecting) {
+      this.selectionModeTarget.set(groupId);
+      this.showFab = true;
+    } else {
+      this.selectionModeTarget.delete(groupId);
     }
   }
 
@@ -291,6 +258,8 @@ export class BuyingsTabPage implements OnInit {
   async rebuyItems() {
     const groups = Array.from(this.selectionModeTarget.keys());
     const ids = this.getAllIds(groups);
+
+    if (ids.length === 0) return;
 
     const toRebuy: Buying[] = (await this.buyingSrv.findAllById(ids)).map(b => ({
       ...b,

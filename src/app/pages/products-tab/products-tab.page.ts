@@ -1,6 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, MenuController, ModalController, ToastController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Product } from 'src/app/models/product';
+import { DatabaseService } from 'src/app/services/database.service';
 import { ProductService } from 'src/app/services/product.service';
 import { ProductPage } from '../product/product.page';
 
@@ -9,9 +11,10 @@ import { ProductPage } from '../product/product.page';
   templateUrl: './products-tab.page.html',
   styleUrls: ['./products-tab.page.scss'],
 })
-export class ProductsTabPage implements OnInit {
+export class ProductsTabPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(IonInfiniteScroll) infinite: IonInfiniteScroll;
 
+  subscription = new Subscription();
   products: Product[] = [];
   loadedCount = 0;
   filter = '';
@@ -20,10 +23,22 @@ export class ProductsTabPage implements OnInit {
   constructor(private modalCtrl: ModalController,
     private productSrv: ProductService,
     private toastCtrl: ToastController,
-    private menuController: MenuController) { }
+    private menuController: MenuController,
+    private dbService: DatabaseService) { }
 
   ngOnInit() {
     this.getProducts(30);
+  }
+  
+  ngAfterViewInit() {
+    this.dbService.onDbImported.subscribe(() => {
+      this.resetProducts();
+      this.getProducts(30);
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   onScroll(e: CustomEvent) {

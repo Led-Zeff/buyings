@@ -11,11 +11,22 @@
 
   <ion-content>
     <ion-list>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
+      <ion-item [detail]="true" (click)="goTo('/categories')">
+        <ion-icon slot="start" name="bookmarks-outline"></ion-icon>
+        <ion-label>Categorías</ion-label>
+      </ion-item>
+      <ion-item [detail]="true" (click)="goTo('/packaging')">
+        <ion-icon slot="start" name="cube-outline"></ion-icon>
+        <ion-label>Empaquetados</ion-label>
+      </ion-item>
+      <ion-item [button]="true" (click)="exportHandler()">
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        <ion-label>Exportar base de datos</ion-label>
+      </ion-item>
+      <ion-item [button]="true" (click)="importHandler()">
+        <ion-icon slot="start" name="push-outline"></ion-icon>
+        <ion-label>Importar base de datos</ion-label>
+      </ion-item>
     </ion-list>
   </ion-content>
 </ion-menu>
