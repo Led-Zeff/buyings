@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonInfiniteScroll, ModalController, ToastController } from '@ionic/angular';
+import { IonInfiniteScroll, MenuController, ModalController, ToastController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
 import { ProductService } from 'src/app/services/product.service';
 import { ProductPage } from '../product/product.page';
@@ -15,11 +15,23 @@ export class ProductsTabPage implements OnInit {
   products: Product[] = [];
   loadedCount = 0;
   filter = '';
+  showFab = true;
 
-  constructor(private modalCtrl: ModalController, private productSrv: ProductService, private toastCtrl: ToastController) { }
+  constructor(private modalCtrl: ModalController,
+    private productSrv: ProductService,
+    private toastCtrl: ToastController,
+    private menuController: MenuController) { }
 
   ngOnInit() {
     this.getProducts(30);
+  }
+
+  onScroll(e: CustomEvent) {
+    if (e.detail.velocityY < 0) { // scrolling up
+      this.showFab = true;
+    } else if (e.detail.velocityY > 0) { // scrolling down
+      this.showFab = false;
+    }
   }
 
   async showProductModal(product?: Product) {
@@ -98,5 +110,9 @@ export class ProductsTabPage implements OnInit {
     this.resetProducts();
     await this.getProducts(30);
     event.target.complete();
+  }
+
+  openMenu() {
+    this.menuController.open();
   }
 }

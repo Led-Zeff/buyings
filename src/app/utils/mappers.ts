@@ -41,7 +41,7 @@ export class Mappers {
         }
         return item as T;
       } else {
-        return resultSet.rows.item(0)[0];
+        return resultSet.rows.item(0)[keys[0].key];
       }
     }
   }

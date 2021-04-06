@@ -21,8 +21,7 @@ export class DatabaseService {
     private sqlitePorter: SQLitePorter,
     sqlite: SQLite,
     private http: HttpClient,
-    private fileSrv: FileService,
-    private toastCtrl: ToastController
+    private fileSrv: FileService
   ) {
     platform.ready().then(() => {
       sqlite.create({
@@ -31,7 +30,7 @@ export class DatabaseService {
       })
       .then(db => {
         this.database = db;
-        this.createDatabase();
+        this.updateDatabase();
       })
     });
   }
@@ -60,11 +59,13 @@ export class DatabaseService {
   }
 
   async insertFor<T>(entity: T, tableName: string) {
+    await this.onDbReady;
     const {query, params} = SqlUtils.generateInsert<T>(entity, tableName);
     return this.executeQuery(query, params);
   }
 
   async updateFor<T>(entity: T, tableName: string, idColumn = 'id') {
+    await this.onDbReady;
     const {query, params} = SqlUtils.generateUpdate<T>(entity, tableName, idColumn);
     return this.executeQuery(query, params);
   }
@@ -93,10 +94,33 @@ export class DatabaseService {
     return ['DROP TABLE IF EXISTS product_fts;', ...sanitized, 'INSERT INTO product_fts(product_fts) VALUES (\'rebuild\');', ''].join('\n');
   }
 
-  private createDatabase() {
-    this.http.get('assets/database.sql', { responseType: 'text' }).subscribe(sql => {
-      this.sqlitePorter.importSqlToDb(this.database, sql).then(async () => {
-        this.dbReady.next(true);
+  private async updateDatabase() {
+    let dbVersion = await this.getDbVersion();
+    const currentVersion = 2;
+
+    while (dbVersion < currentVersion) {
+      await this.importSql(`database.${++dbVersion}.sql`);
+    }
+    this.dbReady.next(true);
+  }
+
+  private async getDbVersion() {
+    try {
+      const dbVersion = await this.database.executeSql('select "value" from settings where id = ?', ['db.version']);
+      return Mappers.singleRowObjectMapper<number>(dbVersion) ?? 0;
+    } catch (e) {
+      console.error(e);
+      return 0;
+    }
+  }
+
+  private async importSql(fileName: string) {
+    return new Promise<void>((resolve, reject) => {
+      this.http.get(`assets/${fileName}`, { responseType: 'text' }).subscribe(sql => {
+        this.sqlitePorter.importSqlToDb(this.database, sql).then(async () => {
+          resolve();
+        })
+        .catch(reject);
       });
     });
   }

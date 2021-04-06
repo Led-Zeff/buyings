@@ -5,16 +5,7 @@
     </ion-title>
 
     <ion-buttons slot="secondary">
-      <ion-button (click)="showActionSheet()" *ngIf="!toBuySelectionMode">
-        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
-      </ion-button>
-
-      <ion-button *ngIf="toBuySelectionMode" color="danger" [disabled]="!someIsTrue(toBuyChecks)" (click)="deleteBuyings()">
-        Eliminar
-      </ion-button>
-      <ion-button *ngIf="toBuySelectionMode" (click)="quitSelectMode()">
-        Cancelar
-      </ion-button>
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
   </ion-toolbar>
 
@@ -23,52 +14,62 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="onScroll($event)">
   <ion-list *ngIf="buyings?.length > 0">
-    <ion-item-sliding *ngFor="let item of buyings; trackBy:getBuyingId">
-      <ion-item>
-        <ion-checkbox *ngIf="toBuySelectionMode" [checked]="toBuyChecks[item.buyingId]" (ionChange)="toggleToBuyItem(item.buyingId)" (click)="$event.stopPropagation()" slot="start" mode="ios"></ion-checkbox>
+    <ion-item-group>
+      <ion-item-divider [sticky]="true" style="padding-right: 16px">
+        <ion-icon slot="start" name="bag-handle-outline"></ion-icon>
+        <ion-label>{{ totalToBuy | currency }}</ion-label>
+        <ion-icon slot="end" [name]="!toBuySelectionMode ? 'checkmark-circle-outline' : 'close-outline'" [color]="!toBuySelectionMode ? 'secondary' : 'medium'"
+          (click)="toggleToBuySelection()"></ion-icon>
+      </ion-item-divider>
 
-        <ion-avatar *ngIf="!toBuySelectionMode" slot="start" (click)="toggleToBuyItem(item.buyingId)">
-          <ion-icon class="avatar-icon" [name]="item.icon"></ion-icon>
-        </ion-avatar>
-
-        <ion-label class="ion-text-wrap">
-          <h2>{{ item.name }}</h2>
-          <p>{{ item.packageType | titlecase }} x{{ item.contentQuantity }}<span *ngIf="item.quantity"> - comprar {{ item.quantity | number }}</span></p>
-        </ion-label>
-        <span>{{ item.price | currency }}</span>
-      </ion-item>
-
-      <ion-item-options side="end">
-        <ion-item-option color="danger" (click)="doDelete([item.buyingId])">
-          <ion-icon slot="icon-only" name="trash"></ion-icon>
-        </ion-item-option>
-        <ion-item-option (click)="showBuyingModal('edit', item.productId, item.buyingId)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-item-option>
-        <ion-item-option color="success" (click)="showBuyingModal('buy', item.productId, item.buyingId)">
-          <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+      <ion-item-sliding *ngFor="let item of buyings; trackBy:getBuyingId">
+        <ion-item>
+          <ion-checkbox *ngIf="toBuySelectionMode" [checked]="toBuyChecks[item.buyingId]" (ionChange)="toggleToBuyItem(item.buyingId)" (click)="$event.stopPropagation()" slot="start" mode="ios"></ion-checkbox>
+  
+          <ion-avatar *ngIf="!toBuySelectionMode" slot="start" (click)="toggleToBuyItem(item.buyingId)">
+            <ion-icon class="avatar-icon" [name]="item.icon"></ion-icon>
+          </ion-avatar>
+  
+          <ion-label class="ion-text-wrap">
+            <h2>{{ item.name }}</h2>
+            <p>{{ item.packageType | titlecase }} x{{ item.contentQuantity }}<span *ngIf="item.quantity"> - comprar {{ item.quantity | number }}</span></p>
+          </ion-label>
+          <span>{{ item.price | currency }}</span>
+        </ion-item>
+  
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="doDelete([item.buyingId])">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+          <ion-item-option (click)="showBuyingModal('edit', item.productId, item.buyingId)">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="success" (click)="showBuyingModal('buy', item.productId, item.buyingId)">
+            <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-item-group>
   </ion-list>
 
   <ion-list>
     <ion-item-group *ngFor="let item of previuos">
-      <ion-item-divider sticky style="padding-right: 16px;">
+      <ion-item-divider [sticky]="true" style="padding-right: 16px">
         <ion-icon slot="start" name="bag-check-outline" style="margin-right: 16px;"></ion-icon>
-        <ion-label *ngIf="!groupSelections[item.boughtDate]?.selecting">{{ item.boughtDate | date:'dd/MM/yyyy' }} - {{ item.total | currency }}</ion-label>
+        <ion-label>{{ item.boughtDate | date:'dd/MM/yyyy' }} - {{ item.total | currency }}</ion-label>
         
-        <ion-icon slot="end" name="add" *ngIf="!groupSelections[item.boughtDate]?.selecting" (click)="toggleGroupSelection(item.boughtDate)"></ion-icon>
-        <ion-button slot="end" *ngIf="groupSelections[item.boughtDate]?.selecting" (click)="rebuyItems(item.boughtDate)">Re-comprar {{ getAllTrue(groupSelections[item.boughtDate]?.items).length }}</ion-button>
-        <ion-button slot="end" *ngIf="groupSelections[item.boughtDate]?.selecting" (click)="toggleGroupSelection(item.boughtDate)" color="light">Cancelar</ion-button>
+        <ion-icon slot="end" [name]="!groupSelections[item.boughtDate]?.selecting ? 'checkmark-circle-outline' : 'close-outline'" [color]="!groupSelections[item.boughtDate]?.selecting ? 'secondary' : 'medium'"
+            (click)="toggleGroupSelection(item.boughtDate)"></ion-icon>
+        <!-- <ion-button slot="end" *ngIf="groupSelections[item.boughtDate]?.selecting" (click)="rebuyItems(item.boughtDate)">Re-comprar {{ getAllTrue(groupSelections[item.boughtDate]?.items).length }}</ion-button> -->
+        <!-- <ion-button slot="end" *ngIf="groupSelections[item.boughtDate]?.selecting" (click)="toggleGroupSelection(item.boughtDate)" color="light">Cancelar</ion-button> -->
 
         <ion-icon slot="end" color="primary" [name]="isExpanded(item.boughtDate) ? 'chevron-up-outline' : 'chevron-down-outline'" (click)="toggleExpanded(item.boughtDate)"></ion-icon>
       </ion-item-divider>
 
       <ng-template [ngIf]="isExpanded(item.boughtDate)">
-        <ion-item *ngFor="let buying of groupItems[item.boughtDate].observable | async">
+        <ion-item *ngFor="let buying of groupItems[item.boughtDate]">
           <ion-checkbox *ngIf="groupSelections[item.boughtDate]?.selecting" [checked]="groupSelections[item.boughtDate].items[buying.buyingId]" (ionChange)="toggleInGroup(item.boughtDate, buying.buyingId)" (click)="$event.stopPropagation()" slot="start" mode="ios"></ion-checkbox>
           
           <ion-avatar *ngIf="!groupSelections[item.boughtDate]?.selecting" (click)="toggleInGroup(item.boughtDate, buying.buyingId)" slot="start">
@@ -77,7 +78,7 @@
 
           <ion-label class="ion-text-wrap">
             <h2 style="text-decoration: line-through">{{ buying.name }}</h2>
-            <p>{{ buying.packageType | titlecase }} x{{ buying.contentQuantity }}<span *ngIf="buying.quantity"> - comprar {{ buying.quantity | number }}</span></p>
+            <p>{{ buying.packageType | titlecase }} x{{ buying.contentQuantity }}<span *ngIf="buying.quantity"> - comprado {{ buying.quantity | number }}</span></p>
           </ion-label>
           <span>{{ buying.price | currency }}</span>
         </ion-item>
@@ -85,9 +86,26 @@
     </ion-item-group>
   </ion-list>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="selectionModeTarget.size === 0 && showFab">
     <ion-fab-button (click)="showSelectProductModal()">
-      <ion-icon name="add"></ion-icon>
+      <ion-icon name="bag-add-outline"></ion-icon>
     </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="selectionModeTarget.size > 0 && showFab">
+    <ion-fab-button color="secondary">
+      <ion-icon name="ellipsis-vertical"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="start">
+      <ion-fab-button color="primary" (click)="rebuyItems()">
+        <ion-icon name="bag-add-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="danger" (click)="deleteBuyings()">
+        <ion-icon name="trash"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="clearAllSelections()">
+        <ion-icon name="close-circle-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
   </ion-fab>
 </ion-content>

@@ -77,4 +77,8 @@ export class BuyingService {
     await this.dbSrv.executeQuery(`delete from buying where id in (${ids})`); 
   }
 
+  async getTotalToBuy() {
+    return this.dbSrv.objectQuery<number>('select sum(price) from buying where is_bought = 0');
+  }
+
 }

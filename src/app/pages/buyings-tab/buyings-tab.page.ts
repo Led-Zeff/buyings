@@ -1,6 +1,5 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonList, ModalController, ToastController } from '@ionic/angular';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { ActionSheetController, IonList, ModalController, ToastController } from '@ionic/angular';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
 import { BuyingDate } from 'src/app/models/buying-date';
@@ -11,6 +10,9 @@ import { FileService } from 'src/app/services/file.service';
 import { BuyingPage } from '../buying/buying.page';
 import { SearchProductPage } from '../search-product/search-product.page';
 
+type TO_BUY = 'to_buy';
+const TO_BUY = 'to_buy';
+
 @Component({
   selector: 'app-buyings-tab',
   templateUrl: './buyings-tab.page.html',
@@ -20,13 +22,16 @@ export class BuyingsTabPage implements OnInit {
   @ViewChild(IonList) ionList: IonList;
 
   buyings: BuyingOverview[];
+  totalToBuy = 0;
   previuos: BuyingDate[];
   expanded: { [key: string]: boolean } = {};
-  groupItems: { [key: string]: {subject: BehaviorSubject<BuyingOverview[]>, observable: Observable<BuyingOverview[]>} } = {};
+  groupItems: { [key: string]: BuyingOverview[] } = {};
   toBuyChecks: { [key: string]: boolean } = {};
   toBuySelectionMode = false;
 
   groupSelections: { [key: string]: { selecting: boolean, items: { [key: string]: boolean } } } = {};
+  selectionModeTarget = new Map<TO_BUY | string, void>(); // if it's TO_BUY, target to `toBuyChecks` else target to specific group in `groupSelections`
+  showFab = true;
 
   constructor(private modalCtrl: ModalController,
     private buyingSrv: BuyingService,
@@ -41,8 +46,13 @@ export class BuyingsTabPage implements OnInit {
   }
 
   async getBuyings(event?: CustomEvent) {
+    this.getTotalToBuy();
     this.buyings = await this.buyingSrv.findPendingBuyings(event?.detail.value);
     this.quitSelectMode();
+  }
+
+  async getTotalToBuy() {
+    this.totalToBuy = await this.buyingSrv.getTotalToBuy();
   }
   
   async getPreviousLists() {
@@ -53,7 +63,7 @@ export class BuyingsTabPage implements OnInit {
       if (this.expanded[bDate] === undefined) { // if user has not expanded it by themself
         this.expanded[bDate] = true;
       }
-      this.getBuyingsGroup(bDate);
+      this.getBuyingsGroup(bDate, true);
     }
   }
 
@@ -100,13 +110,10 @@ export class BuyingsTabPage implements OnInit {
     return this.expanded[boughtDate];
   }
 
-  getBuyingsGroup(boughtDate: string) {
-    if (!this.groupItems[boughtDate]) {
-      const subject = new BehaviorSubject<BuyingOverview[]>([]);
-      this.groupItems[boughtDate] = { subject, observable: subject.asObservable() };
+  getBuyingsGroup(boughtDate: string, reaload = false) {
+    if (!this.groupItems[boughtDate] || reaload) {
+      this.buyingSrv.getBuyingsByDate(boughtDate).then(b => this.groupItems[boughtDate] = b);
     }
-
-    this.buyingSrv.getBuyingsByDate(boughtDate).then(b => this.groupItems[boughtDate].subject.next(b));
   }
 
   @HostListener('click')
@@ -114,12 +121,22 @@ export class BuyingsTabPage implements OnInit {
     this.ionList.closeSlidingItems();
   }
 
+  onScroll(e: CustomEvent) {
+    if (e.detail.velocityY < 0) { // scrolling up
+      this.showFab = true;
+    } else if (e.detail.velocityY > 0) { // scrolling down
+      this.showFab = false;
+    }
+  }
+
   toggleToBuyItem(buyingId: string) {
     this.toBuyChecks[buyingId] = !this.toBuyChecks[buyingId];
     if (this.someIsTrue(this.toBuyChecks)) {
-      if (!this.toBuySelectionMode) this.toBuySelectionMode = true;
+      this.toBuySelectionMode = true;
+      this.selectionModeTarget.set(TO_BUY);
     } else {
-      if (this.toBuySelectionMode) this.toBuySelectionMode = false;
+      this.toBuySelectionMode = false;
+      this.selectionModeTarget.delete(TO_BUY);
     }
   }
 
@@ -145,6 +162,15 @@ export class BuyingsTabPage implements OnInit {
       }
     }
     return selected;
+  }
+
+  toggleToBuySelection() {
+    this.toBuySelectionMode = !this.toBuySelectionMode;
+    if (this.toBuySelectionMode) {
+      this.selectionModeTarget.set(TO_BUY);
+    } else {
+      this.selectionModeTarget.delete(TO_BUY);
+    }
   }
 
   async showActionSheet() {
@@ -196,8 +222,10 @@ export class BuyingsTabPage implements OnInit {
   }
 
   async deleteBuyings() {
-    const selected = this.getAllTrue(this.toBuyChecks);
+    const groups = Array.from(this.selectionModeTarget.keys());
+    const selected = this.getAllIds(groups);
     await this.doDelete(selected);
+    this.clearAllSelections();
   }
 
   async doDelete(ids: string[]) {
@@ -231,6 +259,11 @@ export class BuyingsTabPage implements OnInit {
       const group = this.groupSelections[groupId];
       group.items[item] = !group.items[item];
       group.selecting = this.someIsTrue(group.items);
+      if (group.selecting) {
+        this.selectionModeTarget.set(groupId);
+      } else {
+        this.selectionModeTarget.delete(groupId);
+      }
     }
   }
 
@@ -240,14 +273,25 @@ export class BuyingsTabPage implements OnInit {
     } else {
       this.groupSelections[groupId].selecting = !this.groupSelections[groupId].selecting;
     }
+    if (this.groupSelections[groupId].selecting) {
+      this.selectionModeTarget.set(groupId);
+    } else {
+      this.selectionModeTarget.delete(groupId);
+      this.removeGroupSelection(groupId);
+    }
+    if (!this.expanded[groupId]) {
+      this.toggleExpanded(groupId);
+    }
   }
 
   removeGroupSelection(groupId: string) {
     this.groupSelections[groupId] = { selecting: false, items: {} };
   }
 
-  async rebuyItems(groupId: string) {
-    const ids = this.getAllTrue(this.groupSelections[groupId].items);
+  async rebuyItems() {
+    const groups = Array.from(this.selectionModeTarget.keys());
+    const ids = this.getAllIds(groups);
+
     const toRebuy: Buying[] = (await this.buyingSrv.findAllById(ids)).map(b => ({
       ...b,
       isBought: 0,
@@ -258,9 +302,18 @@ export class BuyingsTabPage implements OnInit {
     }));
 
     const inserted = await Promise.all(toRebuy.map(b => this.buyingSrv.insert(b)));
-    this.removeGroupSelection(groupId);
+    this.clearAllSelections();
     this.getBuyings();
     this.showRebuyToast(inserted);
+  }
+
+  private getAllIds(groups: string[]) {
+    const ids = [];
+    for (const group of groups) {
+      const items = group === TO_BUY ? this.toBuyChecks : this.groupSelections[group].items;
+      this.getAllTrue(items).forEach(i => ids.push(i));
+    }
+    return ids;
   }
 
   async showRebuyToast(ids: string[]) {
@@ -280,5 +333,12 @@ export class BuyingsTabPage implements OnInit {
     });
 
     await toast.present();
+  }
+
+  clearAllSelections() {
+    for (const group of this.selectionModeTarget.keys()) {
+      group === TO_BUY ? this.quitSelectMode() : this.removeGroupSelection(group);
+    }
+    this.selectionModeTarget.clear();
   }
 }

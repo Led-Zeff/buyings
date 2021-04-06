@@ -17,6 +17,10 @@ const routes: Routes = [
   {
     path: 'search-product',
     loadChildren: () => import('./pages/search-product/search-product.module').then( m => m.SearchProductPageModule)
+  },
+  {
+    path: 'categories',
+    loadChildren: () => import('./pages/categories/categories.module').then( m => m.CategoriesPageModule)
   }
 ];
 
