@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, ModalController } from '@ionic/angular';
 import { Product } from 'src/app/models/product';
+import { ModalService } from 'src/app/services/modal.service';
 import { ProductService } from 'src/app/services/product.service';
 import { ProductPage } from '../product/product.page';
 
@@ -16,7 +17,9 @@ export class SearchProductPage implements OnInit {
   loadedCount = 0;
   filter = '';
 
-  constructor(private productSrv: ProductService, private modalCtrl: ModalController) { }
+  constructor(private productSrv: ProductService,
+    private modalCtrl: ModalController,
+    private modalSrv: ModalService) { }
 
   ngOnInit() {
     this.getProducts(30);
@@ -58,19 +61,10 @@ export class SearchProductPage implements OnInit {
   }
 
   async createProductModal() {
-    const modal = await this.modalCtrl.create({
-      component: ProductPage,
-      componentProps: {
-        product: { name: this.filter }
-      }
-    });
-
-    await modal.present();
-    const {data} = await modal.onDidDismiss();
-    if (data?.productId) {
-      console.log('ets')
-      setTimeout(() => { // wait for previous modal to dismiss
-        this.modalCtrl.dismiss({ productId: data.productId });
+    const {productId} = await this.modalSrv.showProductModal({ name: this.filter } as Product);
+    if (productId) {
+      setTimeout(() => { // wait for product modal to dismiss, then dismiss this modal
+        this.modalCtrl.dismiss({ productId: productId });
       }, 200);
     }
   }

@@ -2,10 +2,12 @@ import * as moment from "moment";
 
 export class SqlUtils {
 
-  static generateInsert<T>(entity: T, tableName: string): {query: string, params: any[]} {
+  static generateInsert<T>(entity: T, tableName: string, generatedIdField?: string): {query: string, params: any[]} {
     const keys = this.getKeys(entity);
-    const query = `insert into ${tableName} (${keys.map(k => k.column).join(',')}) values (${keys.map(() => '?').join(',')})`;
-    return { query, params: keys.map(k => k.value) };
+    const columns = keys.filter(k => k.key !== generatedIdField).map(k => k.column).join(',');
+    const params = keys.filter(k => k.key !== generatedIdField).map(k => k.value);
+    const query = `insert into ${tableName} (${columns}) values (${params.map(() => '?').join(',')})`;
+    return { query, params };
   }
 
   static generateUpdate<T>(entity: T, tableName: string, idColumn: string): {query: string, params: any[]} {

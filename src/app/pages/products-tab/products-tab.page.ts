@@ -1,8 +1,9 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonInfiniteScroll, MenuController, ModalController, ToastController } from '@ionic/angular';
+import { IonInfiniteScroll, MenuController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Product } from 'src/app/models/product';
 import { DatabaseService } from 'src/app/services/database.service';
+import { ModalService } from 'src/app/services/modal.service';
 import { ProductService } from 'src/app/services/product.service';
 import { ProductPage } from '../product/product.page';
 
@@ -20,7 +21,7 @@ export class ProductsTabPage implements OnInit, AfterViewInit, OnDestroy {
   filter = '';
   showFab = true;
 
-  constructor(private modalCtrl: ModalController,
+  constructor(private modalSrv: ModalService,
     private productSrv: ProductService,
     private toastCtrl: ToastController,
     private menuController: MenuController,
@@ -50,21 +51,13 @@ export class ProductsTabPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async showProductModal(product?: Product) {
-    const modal = await this.modalCtrl.create({
-      component: ProductPage,
-      componentProps: {
-        product
-      }
-    });
-
-    await modal.present();
-    const {data} = await modal.onDidDismiss();
-    if (data?.productId) {
+    const {productId, action} = await this.modalSrv.showProductModal(product);
+    if (productId) {
       this.resetProducts();
       this.getProducts(30);
 
-      if (data.action === 'delete') {
-        this.showDeleteToast(data.productId);
+      if (action === 'delete') {
+        this.showDeleteToast(productId);
       }
     }
   }

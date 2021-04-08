@@ -46,13 +46,13 @@ export class ProductService {
   }
 
   async getProducts(limit: number, offset: number) {
-    return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by "name" limit ? offset ?', [limit, offset]);
+    return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by upper("name") limit ? offset ?', [limit, offset]);
   }
   
   async findProducts(filter: string, limit: number, offset: number) {
     const tokens = SqlUtils.buildTokens(filter);
     if (tokens === '\'\'') {
-      return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by "name" limit ? offset ?', [limit, offset]);
+      return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by upper("name") limit ? offset ?', [limit, offset]);
     } else {
       return this.dbSrv.listQuery<Product>('select p.* from product_fts fts inner join product p on fts.id = p.id where product_fts match ' + tokens + ' order by rank limit ? offset ?', [limit, offset]);
     }

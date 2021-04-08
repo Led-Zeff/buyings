@@ -47,7 +47,7 @@ export class AppComponent {
       const createdFilePath = await this.databaseSrv.exportDatabase();
       const toast = await this.toastCtrl.create({
         message: 'Archivo creado',
-        duration: 20000,
+        duration: 5000,
         buttons: [{
           side: 'start',
           icon: 'close'

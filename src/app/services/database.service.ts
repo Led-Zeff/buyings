@@ -63,9 +63,9 @@ export class DatabaseService {
     return Mappers.singleRowObjectMapper<T>(result);
   }
 
-  async insertFor<T>(entity: T, tableName: string) {
+  async insertFor<T>(entity: T, tableName: string, generatedIdField?: string) {
     await this.onDbReady;
-    const {query, params} = SqlUtils.generateInsert<T>(entity, tableName);
+    const {query, params} = SqlUtils.generateInsert<T>(entity, tableName, generatedIdField);
     return this.executeQuery(query, params);
   }
 

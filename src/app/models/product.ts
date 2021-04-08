@@ -10,4 +10,5 @@ export class Product {
   lastTimeUpdated: string;
   icon: string;
   deleted?: number;
+  categoryId?: number;
 }

@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Editar categoría</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">Cancelar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input formControlName="name" type="text" [clearInput]="true"></ion-input>
+      </ion-item>
+
+      <ion-item style="align-items: center;">
+        <ion-label position="stacked" style="padding-bottom: 5px;">Porcentaje de ganancia</ion-label>
+        <ion-range min="0" [max]="maxProfit" formControlName="profitPercentage">
+          <ion-label slot="end" style="min-width: 20px;">{{ categoryForm.value.profitPercentage }}</ion-label>
+        </ion-range>
+        
+        <ion-buttons slot="end" style="margin-left: 0;">
+          <ion-button (click)="showProfitDialog()">
+            <ion-icon slot="icon-only" name="keypad-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-list>
+
+    <ion-button (click)="onSubmit()" color="primary" expand="block" style="margin-top: 20px">
+      <ion-icon slot="start" name="save"></ion-icon>
+      Guardar
+    </ion-button>
+  </form>
+</ion-content>

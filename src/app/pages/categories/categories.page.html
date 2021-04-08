@@ -8,6 +8,27 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="onScroll($event)">
+  <ion-list lines="full">
+    <ion-item-sliding *ngFor="let category of categories">
+      <ion-item [detail]="true" [button]="true" (click)="showCategoryModal(category)">
+        <ion-label>
+          <h2>{{ category.name }}</h2>
+          <p>Ganancia: {{ category.profitPercentage }}%</p>
+        </ion-label>
+      </ion-item>
 
+      <ion-item-options side="end">
+        <ion-item-option color="danger" [expandable]="true" (click)="deleteCategory(category)">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="showFab">
+    <ion-fab-button (click)="showCategoryModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

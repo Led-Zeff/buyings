@@ -4,17 +4,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { CategoriesPageRoutingModule } from './categories-routing.module';
+import { CategoryPageRoutingModule } from './category-routing.module';
 
-import { CategoriesPage } from './categories.page';
+import { CategoryPage } from './category.page';
 
 @NgModule({
   imports: [
     CommonModule,
     ReactiveFormsModule,
     IonicModule,
-    CategoriesPageRoutingModule
+    CategoryPageRoutingModule
   ],
-  declarations: [CategoriesPage]
+  declarations: [CategoryPage]
 })
-export class CategoriesPageModule {}
+export class CategoryPageModule {}

@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonList, ModalController, ToastController } from '@ionic/angular';
+import { IonList, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
@@ -7,8 +7,7 @@ import { BuyingDate } from 'src/app/models/buying-date';
 import { BuyingOverview } from 'src/app/models/buying-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { DatabaseService } from 'src/app/services/database.service';
-import { BuyingPage } from '../buying/buying.page';
-import { SearchProductPage } from '../search-product/search-product.page';
+import { ModalService } from 'src/app/services/modal.service';
 
 type TO_BUY = 'to_buy';
 const TO_BUY = 'to_buy';
@@ -34,10 +33,10 @@ export class BuyingsTabPage implements OnInit, OnDestroy {
   selectionModeTarget = new Map<TO_BUY | string, void>(); // if it's TO_BUY, target to `toBuyChecks` else target to specific group in `groupSelections`
   showFab = true;
 
-  constructor(private modalCtrl: ModalController,
-    private buyingSrv: BuyingService,
+  constructor(private buyingSrv: BuyingService,
     private toastCtrl: ToastController,
-    private dbSrv: DatabaseService) { }
+    private dbSrv: DatabaseService,
+    private modalSrv: ModalService) { }
 
   ngOnInit() {
     this.init();
@@ -78,32 +77,17 @@ export class BuyingsTabPage implements OnInit, OnDestroy {
   }
 
   async showBuyingModal(action: BuyingAction, productId: string, buyingId?: string) {
-    const modal = await this.modalCtrl.create({
-      component: BuyingPage,
-      componentProps: {
-        productId,
-        buyingId,
-        action
-      }
-    });
-
-    await modal.present();
-    const {data} = await modal.onDidDismiss();
-    if (data?.buyingId) {
+    const {buyingId: savedId} = await this.modalSrv.showBuyingModal(action, productId, buyingId);
+    if (savedId) {
       this.getBuyings();
       this.getPreviousLists();
     }
   }
 
   async showSelectProductModal() {
-    const modal = await this.modalCtrl.create({
-      component: SearchProductPage
-    });
-
-    await modal.present();
-    const {data} = await modal.onDidDismiss();
-    if (data?.productId) {
-      this.showBuyingModal('add', data.productId);
+    const {productId} = await this.modalSrv.showSelectProductModal();
+    if (productId) {
+      this.showBuyingModal('add', productId);
     }
   }
 
