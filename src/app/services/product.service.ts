@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { v4 } from 'uuid';
 import { Product } from '../models/product';
+import { ProductOverview } from '../models/product-overview';
 import { SqlUtils } from '../utils/sql-utils';
 import { DatabaseService } from './database.service';
 
@@ -46,15 +47,16 @@ export class ProductService {
   }
 
   async getProducts(limit: number, offset: number) {
-    return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by upper("name") limit ? offset ?', [limit, offset]);
+    return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product p left join category c on p.category_id = c.id where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
   }
   
   async findProducts(filter: string, limit: number, offset: number) {
     const tokens = SqlUtils.buildTokens(filter);
     if (tokens === '\'\'') {
-      return this.dbSrv.listQuery<Product>('select * from product where deleted = 0 order by upper("name") limit ? offset ?', [limit, offset]);
+      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product p left join category c on p.category_id = c.id where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
     } else {
-      return this.dbSrv.listQuery<Product>('select p.* from product_fts fts inner join product p on fts.id = p.id where product_fts match ' + tokens + ' order by rank limit ? offset ?', [limit, offset]);
+      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product_fts fts inner join product p on fts.id = p.id '
+        + 'left join category c on p.category_id = c.id where product_fts match ' + tokens + ' order by rank limit ? offset ?', [limit, offset]);
     }
   }
 

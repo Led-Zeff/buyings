@@ -13,7 +13,7 @@
     <ion-list lines="full">
       <ion-item>
         <ion-label position="stacked">Nombre</ion-label>
-        <ion-input formControlName="name" type="text" [clearInput]="true"></ion-input>
+        <ion-input formControlName="name" type="text"></ion-input>
       </ion-item>
   
       <ion-item-sliding #slider>
@@ -38,13 +38,26 @@
       </ion-item-sliding>
 
       <ion-item>
+        <ion-label position="stacked">Categoría</ion-label>
+        <ion-select formControlName="categoryId">
+          <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
+        </ion-select>
+
+        <ion-buttons slot="end" style="margin-left: 8px;">
+          <ion-button>
+            <ion-icon slot="icon-only" name="add"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+
+      <ion-item>
         <ion-label position="stacked">Cantidad contenida</ion-label>
-        <ion-input formControlName="contentQuantity" inputmode="numeric" [clearInput]="true"></ion-input>
+        <ion-input formControlName="contentQuantity" inputmode="numeric"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Precio de venta</ion-label>
-        <ion-input formControlName="salePrice" inputmode="numeric" [clearInput]="true"></ion-input>
+        <ion-input formControlName="salePrice" inputmode="numeric"></ion-input>
       </ion-item>
     </ion-list>
 

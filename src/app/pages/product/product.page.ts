@@ -1,7 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
+import { Category } from 'src/app/models/category';
 import { Product } from 'src/app/models/product';
+import { CategoryService } from 'src/app/services/category.service';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
 import { randomIcon } from 'src/app/utils/product-icons';
@@ -16,12 +18,14 @@ export class ProductPage implements OnInit {
 
   productForm: FormGroup;
   packages: string[];
+  categories: Category[];
   icons = {'PIEZA': 'pricetag-outline', 'LITRO': 'water-outline', 'KILO': 'cube-outline'};
 
   constructor(private modalCtrl: ModalController,
     private productSrv: ProductService,
     private fb: FormBuilder,
-    private alertCtrl: AlertController) { }
+    private alertCtrl: AlertController,
+    private categorySrv: CategoryService) { }
 
   async ngOnInit() {
     this.productForm = this.fb.group({
@@ -32,10 +36,11 @@ export class ProductPage implements OnInit {
       lastBoughtTime: [],
       salePrice: [null, [CustomValidators.decimal] ],
       lastTimeUpdated: [],
-      deleted: [0]
+      deleted: [0],
+      categoryId: []
     });
 
-    await this.loadPackages();
+    await Promise.all([this.loadPackages(), this.loadCategories()]); // await for those, or the value will not display correctly in the form
     if (this.product) {
       this.productForm.patchValue(this.product);
     }
@@ -43,6 +48,10 @@ export class ProductPage implements OnInit {
 
   async loadPackages() {
     this.packages = await this.productSrv.getPackages();
+  }
+
+  async loadCategories() {
+    this.categories = await this.categorySrv.getAll();
   }
 
   async newPackageDialog() {

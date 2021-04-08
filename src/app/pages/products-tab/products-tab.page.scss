@@ -1,0 +1,11 @@
+.slim-chip {
+  margin: 0;
+  margin-right: 8px;
+  padding: 3px;
+  border: none;
+  height: unset;
+
+  & > ion-icon {
+    margin-inline-end: 4px;
+  }
+}

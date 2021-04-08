@@ -40,36 +40,36 @@ export class DatabaseService {
     return this.dbImported.asObservable();
   }
 
-  async executeQuery(query: string, params?: any[]) {
+  async executeQuery(query: string, params?: any[]): Promise<ResultSet> {
     await this.onDbReady;
     return (await this.database.executeSql(query, params)) as ResultSet;
   }
 
-  async singleColumnListQuery<T>(query: string, params?: any[]) {
+  async singleColumnListQuery<T>(query: string, params?: any[]): Promise<T[]> {
     await this.onDbReady;
     const result = await this.database.executeSql(query, params);
     return Mappers.singleColumnMapper<T>(result);
   }
 
-  async listQuery<T>(query: string, params?: any[]) {
+  async listQuery<T>(query: string, params?: any[]): Promise<T[]> {
     await this.onDbReady;
     const result = await this.database.executeSql(query, params);
     return Mappers.objectMapper<T>(result);
   }
 
-  async objectQuery<T>(query: string, params?: any[]) {
+  async objectQuery<T>(query: string, params?: any[]): Promise<T> {
     await this.onDbReady;
     const result = await this.database.executeSql(query, params);
     return Mappers.singleRowObjectMapper<T>(result);
   }
 
-  async insertFor<T>(entity: T, tableName: string, generatedIdField?: string) {
+  async insertFor<T>(entity: T, tableName: string, generatedIdField?: string): Promise<ResultSet> {
     await this.onDbReady;
     const {query, params} = SqlUtils.generateInsert<T>(entity, tableName, generatedIdField);
     return this.executeQuery(query, params);
   }
 
-  async updateFor<T>(entity: T, tableName: string, idColumn = 'id') {
+  async updateFor<T>(entity: T, tableName: string, idColumn = 'id'): Promise<ResultSet> {
     await this.onDbReady;
     const {query, params} = SqlUtils.generateUpdate<T>(entity, tableName, idColumn);
     return this.executeQuery(query, params);
@@ -84,7 +84,7 @@ export class DatabaseService {
     return externalFile;
   }
 
-  async importDatabase() {
+  async importDatabase(): Promise<void> {
     const path = await this.fileSrv.pickFile();
     const script = await this.fileSrv.readFile(path);
     await this.sqlitePorter.importSqlToDb(this.database, script);

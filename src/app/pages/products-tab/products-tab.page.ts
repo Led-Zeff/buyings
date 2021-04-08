@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular
 import { IonInfiniteScroll, MenuController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Product } from 'src/app/models/product';
+import { ProductOverview } from 'src/app/models/product-overview';
 import { DatabaseService } from 'src/app/services/database.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { ProductService } from 'src/app/services/product.service';
@@ -16,7 +17,7 @@ export class ProductsTabPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(IonInfiniteScroll) infinite: IonInfiniteScroll;
 
   subscription = new Subscription();
-  products: Product[] = [];
+  products: ProductOverview[] = [];
   loadedCount = 0;
   filter = '';
   showFab = true;
