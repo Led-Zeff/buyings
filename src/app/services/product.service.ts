@@ -47,21 +47,27 @@ export class ProductService {
   }
 
   async getProducts(limit: number, offset: number) {
-    return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product p left join category c on p.category_id = c.id where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
+    return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category, profit_percentage from product p left join category c on p.category_id = c.id '
+      + 'where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
   }
   
   async findProducts(filter: string, limit: number, offset: number) {
     const tokens = SqlUtils.buildTokens(filter);
     if (tokens === '\'\'') {
-      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product p left join category c on p.category_id = c.id where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
+      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category, profit_percentage from product p left join category c on p.category_id = c.id '
+        + 'where p.deleted = 0 order by upper(p."name") limit ? offset ?', [limit, offset]);
     } else {
-      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category from product_fts fts inner join product p on fts.id = p.id '
+      return this.dbSrv.listQuery<ProductOverview>('select p.*, c.name as category, profit_percentage from product_fts fts inner join product p on fts.id = p.id '
         + 'left join category c on p.category_id = c.id where product_fts match ' + tokens + ' order by rank limit ? offset ?', [limit, offset]);
     }
   }
 
   async findById(productId: string) {
     return this.dbSrv.objectQuery<Product>('select * from product where id = ?', [productId]);
+  }
+
+  async findOverviewById(productId: string) {
+    return this.dbSrv.objectQuery<ProductOverview>('select p.*, c.name as category, profit_percentage from product p left join category c on p.category_id = c.id where p.id = ?', [productId]);
   }
 
   private async insertIntoFts(productId: string) {

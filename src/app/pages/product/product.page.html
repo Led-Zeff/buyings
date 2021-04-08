@@ -40,11 +40,11 @@
       <ion-item>
         <ion-label position="stacked">Categoría</ion-label>
         <ion-select formControlName="categoryId">
-          <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
+          <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }} (+{{ category.profitPercentage }}%)</ion-select-option>
         </ion-select>
 
         <ion-buttons slot="end" style="margin-left: 8px;">
-          <ion-button>
+          <ion-button (click)="addCategory()">
             <ion-icon slot="icon-only" name="add"></ion-icon>
           </ion-button>
         </ion-buttons>

@@ -7,6 +7,7 @@ import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
 import { Prices } from 'src/app/models/prices';
 import { Product } from 'src/app/models/product';
+import { ProductOverview } from 'src/app/models/product-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
@@ -24,10 +25,9 @@ export class BuyingPage implements OnInit, OnDestroy {
   @Input() buyingId?: string;
 
   buyingForm: FormGroup;
-  product: Product;
+  product: ProductOverview;
   unitPrice$: Observable<number>;
   proposedUnitSalePrice: number;
-  productPrices: Prices;
 
   private _quantityValidators: ValidatorFn[] = [CustomValidators.number, Validators.min(1)];
   private _priceValidators: ValidatorFn[] = [CustomValidators.decimal];
@@ -55,7 +55,7 @@ export class BuyingPage implements OnInit, OnDestroy {
 
     this.setValidations();
 
-    this.product = await this.productSrv.findById(this.productId);
+    this.product = await this.productSrv.findOverviewById(this.productId);
     if (this.buyingId) {
       const buying = await this.buyingSrv.findById(this.buyingId);
       this.buyingForm.patchValue({
@@ -64,8 +64,6 @@ export class BuyingPage implements OnInit, OnDestroy {
         salePrice: this.product.salePrice
       });
     }
-
-    this.productPrices = await this.buyingSrv.getLastPriceForProduct(this.productId);
   }
 
   ngOnDestroy() {
@@ -88,9 +86,9 @@ export class BuyingPage implements OnInit, OnDestroy {
         const unitPrice = price / quantity / this.product.contentQuantity;
         this.buyingForm.controls.unitPrice.setValue(unitPrice);
 
-        if (this.productPrices) { // set proposed sale price
-          const previousMargin = this.productPrices.unitSalePrice * 100 / this.productPrices.unitPrice;
-          this.proposedUnitSalePrice = Number((unitPrice / 100 * previousMargin).toFixed(2));
+        if (this.product.profitPercentage) { // set proposed sale price
+          const profitMargin = this.product.profitPercentage + 100;
+          this.proposedUnitSalePrice = Number((unitPrice / 100 * profitMargin).toFixed(2));
         }
 
         return unitPrice;
@@ -157,7 +155,7 @@ export class BuyingPage implements OnInit, OnDestroy {
     await modal.present();
     const {data} = await modal.onDidDismiss();
     if (data?.productId) {
-      this.product = await this.productSrv.findById(data.productId);
+      this.product = await this.productSrv.findOverviewById(data.productId);
     }
   }
 }

@@ -4,6 +4,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { Category } from 'src/app/models/category';
 import { Product } from 'src/app/models/product';
 import { CategoryService } from 'src/app/services/category.service';
+import { ModalService } from 'src/app/services/modal.service';
 import { ProductService } from 'src/app/services/product.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
 import { randomIcon } from 'src/app/utils/product-icons';
@@ -25,7 +26,8 @@ export class ProductPage implements OnInit {
     private productSrv: ProductService,
     private fb: FormBuilder,
     private alertCtrl: AlertController,
-    private categorySrv: CategoryService) { }
+    private categorySrv: CategoryService,
+    private modalSrv: ModalService) { }
 
   async ngOnInit() {
     this.productForm = this.fb.group({
@@ -112,5 +114,13 @@ export class ProductPage implements OnInit {
 
   dismissModal(action?: string, productId?: string) {
     this.modalCtrl.dismiss({ action, productId });
+  }
+
+  async addCategory() {
+    const cat = await this.modalSrv.showCategoryModal();
+    if (cat) {
+      await this.loadCategories();
+      this.productForm.controls.categoryId.setValue(cat.id);
+    }
   }
 }
