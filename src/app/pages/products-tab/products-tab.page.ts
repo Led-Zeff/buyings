@@ -52,7 +52,7 @@ export class ProductsTabPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async showProductModal(product?: Product) {
-    const {productId, action} = await this.modalSrv.showProductModal(product);
+    const {productId, action} = await this.modalSrv.showProductModal(ProductPage, product);
     if (productId) {
       this.resetProducts();
       this.getProducts(30);

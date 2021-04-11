@@ -5,8 +5,6 @@ import { Observable, merge, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
-import { Prices } from 'src/app/models/prices';
-import { Product } from 'src/app/models/product';
 import { ProductOverview } from 'src/app/models/product-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { ProductService } from 'src/app/services/product.service';

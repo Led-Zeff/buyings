@@ -61,7 +61,7 @@ export class SearchProductPage implements OnInit {
   }
 
   async createProductModal() {
-    const {productId} = await this.modalSrv.showProductModal({ name: this.filter } as Product);
+    const {productId} = await this.modalSrv.showProductModal(ProductPage, { name: this.filter } as Product);
     if (productId) {
       setTimeout(() => { // wait for product modal to dismiss, then dismiss this modal
         this.modalCtrl.dismiss({ productId: productId });

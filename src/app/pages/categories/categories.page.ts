@@ -3,6 +3,7 @@ import { IonList, NavController, ToastController } from '@ionic/angular';
 import { Category } from 'src/app/models/category';
 import { CategoryService } from 'src/app/services/category.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { CategoryPage } from '../category/category.page';
 
 @Component({
   selector: 'app-categories',
@@ -37,21 +38,16 @@ export class CategoriesPage implements OnInit {
   }
 
   async showCategoryModal(category?: Category) {
-    const saved = await this.modalSrv.showCategoryModal(category);
+    const saved = await this.modalSrv.showCategoryModal(CategoryPage, category);
     if (saved) {
       this.getCategories();
     }
-  }
-
-  goBack() {
-    this.navCtrl.navigateBack('/');
   }
 
   async deleteCategory(category: Category) {
     const products = await this.categorySrv.getProductIdByCategory(category.id);
     await this.categorySrv.delete(category.id);
     this.getCategories();
-    console.log(products)
 
     const toast = await this.toastController.create({
       message: 'Categoría eliminada',

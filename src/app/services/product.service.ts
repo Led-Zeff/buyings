@@ -12,16 +12,6 @@ export class ProductService {
   
   constructor(private dbSrv: DatabaseService) { }
 
-  async getPackages() {
-    return this.dbSrv.singleColumnListQuery<string>('select * from packaging');
-  }
-
-  async newPackage(name: string): Promise<string> {
-    const normName = name.trim().toLocaleUpperCase();
-    await this.dbSrv.executeQuery('insert into packaging values (?)', [normName]);
-    return normName;
-  }
-
   async newProduct(product: Product): Promise<string> {
     const id = v4();
     await this.dbSrv.insertFor({ ...product, id, lastTimeUpdated: SqlUtils.now() }, 'product');

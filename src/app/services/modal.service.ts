@@ -3,10 +3,6 @@ import { ModalController } from '@ionic/angular';
 import { BuyingAction } from '../models/buying-action';
 import { Category } from '../models/category';
 import { Product } from '../models/product';
-import { BuyingPage } from '../pages/buying/buying.page';
-import { CategoryPage } from '../pages/category/category.page';
-import { ProductPage } from '../pages/product/product.page';
-import { SearchProductPage } from '../pages/search-product/search-product.page';
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +10,9 @@ import { SearchProductPage } from '../pages/search-product/search-product.page';
 export class ModalService {
   constructor(private modalCtrl: ModalController) { }
 
-  async showProductModal(product?: Product): Promise<{ productId?: string, action?: 'edit' | 'delete' }> {
+  async showProductModal(component: any, product?: Product): Promise<{ productId?: string, action?: 'edit' | 'delete' }> {
     const modal = await this.modalCtrl.create({
-      component: ProductPage,
+      component,
       componentProps: {
         product
       }
@@ -27,9 +23,9 @@ export class ModalService {
     return { productId: data?.productId, action: data?.action }
   }
 
-  async showSelectProductModal(): Promise<{productId?: string}> {
+  async showSelectProductModal(component: any): Promise<{productId?: string}> {
     const modal = await this.modalCtrl.create({
-      component: SearchProductPage
+      component
     });
 
     await modal.present();
@@ -37,9 +33,9 @@ export class ModalService {
     return { productId: data?.productId };
   }
 
-  async showBuyingModal(action: BuyingAction, productId: string, buyingId?: string): Promise<{buyingId: string}> {
+  async showBuyingModal(component: any, action: BuyingAction, productId: string, buyingId?: string): Promise<{buyingId: string}> {
     const modal = await this.modalCtrl.create({
-      component: BuyingPage,
+      component,
       componentProps: {
         productId,
         buyingId,
@@ -52,9 +48,9 @@ export class ModalService {
     return { buyingId: data?.buyingId };
   }
 
-  async showCategoryModal(category?: Category) {
+  async showCategoryModal(component: any,category?: Category) {
     const modal = await this.modalCtrl.create({
-      component: CategoryPage,
+      component,
       componentProps: {
         category
       }

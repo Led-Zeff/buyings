@@ -8,6 +8,8 @@ import { BuyingOverview } from 'src/app/models/buying-overview';
 import { BuyingService } from 'src/app/services/buying.service';
 import { DatabaseService } from 'src/app/services/database.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { BuyingPage } from '../buying/buying.page';
+import { SearchProductPage } from '../search-product/search-product.page';
 
 type TO_BUY = 'to_buy';
 const TO_BUY = 'to_buy';
@@ -77,7 +79,7 @@ export class BuyingsTabPage implements OnInit, OnDestroy {
   }
 
   async showBuyingModal(action: BuyingAction, productId: string, buyingId?: string) {
-    const {buyingId: savedId} = await this.modalSrv.showBuyingModal(action, productId, buyingId);
+    const {buyingId: savedId} = await this.modalSrv.showBuyingModal(BuyingPage, action, productId, buyingId);
     if (savedId) {
       this.getBuyings();
       this.getPreviousLists();
@@ -85,7 +87,7 @@ export class BuyingsTabPage implements OnInit, OnDestroy {
   }
 
   async showSelectProductModal() {
-    const {productId} = await this.modalSrv.showSelectProductModal();
+    const {productId} = await this.modalSrv.showSelectProductModal(SearchProductPage);
     if (productId) {
       this.showBuyingModal('add', productId);
     }
