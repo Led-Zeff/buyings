@@ -28,10 +28,12 @@ export class BuyingService {
     const tokens = SqlUtils.buildTokens(filter);
 
     if (tokens === '\'\'') {
-      return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price '
+      return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price, b.branch, '
+            + '(select unit_price from buying b2 where b2.product_id = b.product_id and b2.is_bought = 1 order by b2.bought_time desc limit 1) last_unit_price '
             + 'from buying b inner join product p on b.product_id = p.id where b.is_bought = 0 order by p.last_bought_time');
     } else {
-      return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price '
+      return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price, b.branch '
+            + '(select unit_price from buying b2 where b2.product_id = b.product_id and b2.is_bought = 1 order by b2.bought_time desc limit 1) last_unit_price '
             + 'from buying b inner join product p on b.product_id = p.id '
             + 'inner join product_fts fts on fts.id = p.id '
             + 'where product_fts match ' + tokens + ' order by rank');
@@ -39,7 +41,7 @@ export class BuyingService {
   }
 
   async getBuyingsByDate(boughtDate: string) {
-    return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price '
+    return this.dbSrv.listQuery<BuyingOverview>('select b.id buyingId, p.id productId, p.name, p.icon, p.package_type, p.content_quantity, b.quantity, b.last_time_updated, b.is_bought, b.price, b.branch '
             + 'from buying b inner join product p on b.product_id = p.id where b.is_bought = 1 and date(b.bought_time) = ? order by p.last_bought_time', [boughtDate]);
   }
 

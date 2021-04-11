@@ -37,6 +37,23 @@
         <span>{{ unitPrice$ | async | currency }}</span>
       </ion-item>
 
+      <ion-item *ngIf="branches?.length > 0 && branches?.length <= 3; else branchSelect">
+        <ion-segment formControlName="branch" mode="ios">
+          <ion-segment-button *ngFor="let branch of branches" [value]="branch">
+            <ion-label>{{ branch }}</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-item>
+
+      <ng-template #branchSelect>
+        <ion-item>
+          <ion-label position="stacked">Sucursal</ion-label>
+          <ion-select formControlName="branch">
+            <ion-select-option *ngFor="let branch of branches" [value]="branch">{{ branch | titlecase }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ng-template>
+
       <ion-item *ngIf="action !== 'buy'">
         <ion-label>Ya comprado</ion-label>
         <ion-toggle formControlName="isBought"></ion-toggle>

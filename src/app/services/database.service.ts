@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Platform } from '@ionic/angular';
+import * as moment from 'moment';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ResultSet } from '../models/result-set';
@@ -78,7 +79,9 @@ export class DatabaseService {
   async exportDatabase(): Promise<string> {
     const db = await this.sqlitePorter.exportDbToSql(this.database);
     const prepared = this.prepareScript(db);
-    const dbFile = await this.fileSrv.createFile(prepared);
+    const now = moment().format('D MMM yyyy HHmmss');
+    const filename = `Database ${now}.sql`;
+    const dbFile = await this.fileSrv.createFile(this.fileSrv.cacheDirectory, filename, prepared);
     const externalFile = await this.fileSrv.sendFileToExternalDrive(dbFile);
     this.fileSrv.deleteFile(dbFile);
     return externalFile;

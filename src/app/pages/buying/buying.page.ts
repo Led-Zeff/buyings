@@ -6,8 +6,10 @@ import { map } from 'rxjs/operators';
 import { Buying } from 'src/app/models/buying';
 import { BuyingAction } from 'src/app/models/buying-action';
 import { ProductOverview } from 'src/app/models/product-overview';
+import { BranchService } from 'src/app/services/branch.service';
 import { BuyingService } from 'src/app/services/buying.service';
 import { ProductService } from 'src/app/services/product.service';
+import { AppSettings, SettingsService } from 'src/app/services/settings.service';
 import { CustomValidators } from 'src/app/utils/custom-validators';
 import { SqlUtils } from 'src/app/utils/sql-utils';
 import { SearchProductPage } from '../search-product/search-product.page';
@@ -26,6 +28,8 @@ export class BuyingPage implements OnInit, OnDestroy {
   product: ProductOverview;
   unitPrice$: Observable<number>;
   proposedUnitSalePrice: number;
+  branches: string[];
+  settings: AppSettings;
 
   private _quantityValidators: ValidatorFn[] = [CustomValidators.number, Validators.min(1)];
   private _priceValidators: ValidatorFn[] = [CustomValidators.decimal];
@@ -34,7 +38,9 @@ export class BuyingPage implements OnInit, OnDestroy {
   constructor(private buyingSrv: BuyingService,
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private productSrv: ProductService) { }
+    private productSrv: ProductService,
+    private branchSrv: BranchService,
+    private settingsSrv: SettingsService) { }
 
   async ngOnInit() {
     this.buyingForm = this.fb.group({
@@ -46,14 +52,18 @@ export class BuyingPage implements OnInit, OnDestroy {
       price: [null, this._priceValidators],
       unitPrice: [null],
       unitSalePrice: [null, this._priceValidators],
-      lastTimeUpdated: []
+      lastTimeUpdated: [],
+      branch: []
     });
 
     this.setUnitPrices();
-
     this.setValidations();
+    this.updateLastBranch();
 
     this.product = await this.productSrv.findOverviewById(this.productId);
+    this.branches = await this.branchSrv.getBranches();
+    this.settings = await this.settingsSrv.getSettings();
+
     if (this.buyingId) {
       const buying = await this.buyingSrv.findById(this.buyingId);
       this.buyingForm.patchValue({
@@ -61,6 +71,8 @@ export class BuyingPage implements OnInit, OnDestroy {
         isBought: buying.isBought === 1 || this.action === 'buy' ? true : false,
         salePrice: this.product.salePrice
       });
+    } else {
+      this.buyingForm.controls.branch.setValue(this.settings.lastSelectedBrach);
     }
   }
 
@@ -110,6 +122,14 @@ export class BuyingPage implements OnInit, OnDestroy {
         this.buyingForm.controls.price.updateValueAndValidity();
         this.buyingForm.controls.unitSalePrice.setValidators(this._priceValidators);
         this.buyingForm.controls.unitSalePrice.updateValueAndValidity();
+      }
+    }));
+  }
+
+  updateLastBranch() {
+    this._subscription.add(this.buyingForm.controls.branch.valueChanges.subscribe(branch => {
+      if (branch !== this.settings?.lastSelectedBrach) {
+        this.settingsSrv.updateSettings({ lastSelectedBrach: branch });
       }
     }));
   }

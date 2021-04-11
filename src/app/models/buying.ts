@@ -8,4 +8,5 @@ export interface Buying {
   unitPrice?: number;
   unitSalePrice?: number;
   lastTimeUpdated: string;
+  branch: string;
 }

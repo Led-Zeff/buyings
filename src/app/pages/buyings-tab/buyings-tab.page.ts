@@ -59,6 +59,7 @@ export class BuyingsTabPage implements OnInit, OnDestroy {
   async getBuyings(event?: CustomEvent) {
     this.getTotalToBuy();
     this.buyings = await this.buyingSrv.findPendingBuyings(event?.detail.value);
+    console.log(this.buyings)
     this.quitSelectMode();
   }
 

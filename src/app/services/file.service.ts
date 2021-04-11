@@ -5,7 +5,6 @@ import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
-import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'
@@ -24,11 +23,17 @@ export class FileService {
     this.fileTransferObj = fileTransfer.create();
   }
 
-  async createFile(content: string): Promise<FileEntry> {
-    const blob = new Blob([content], { type: 'text/sql' });
-    const now = moment().format('D MMM yyyy HHmmss');
-    const filename = `Database ${now}.sql`;
-    return await this.file.writeFile(this.file.cacheDirectory, filename, blob, { append: false, replace: true });
+  get dataDirectory() {
+    return this.file.dataDirectory;
+  }
+
+  get cacheDirectory() {
+    return this.file.cacheDirectory;
+  }
+
+  async createFile(directory: string, fileName: string, content: string): Promise<FileEntry> {
+    const blob = new Blob([content]);
+    return await this.file.writeFile(directory, fileName, blob, { append: false, replace: true });
   }
 
   async deleteFile(fileEntry: FileEntry) {
@@ -55,21 +60,29 @@ export class FileService {
   async readFile(nativePath: string): Promise<string> {
     await this.checkPermission('READ_EXTERNAL_STORAGE');
     return new Promise(async (resolve, reject) => {
-      const fileEntry = await this.file.resolveLocalFilesystemUrl(nativePath) as FileEntry;
-      fileEntry.file(f => {
-        const reader = new FileReader() as any; // for some reason reader is not working as expected
-        reader.readAsText(f);
-        
-        const checker = () => {
-          if (reader._readyState === 2) {
-            resolve(reader._result);
-          } else {
-            setTimeout(() => checker(), 250); // wait to check again
-          }
-        };
-        checker();
-      });
+      try {
+        const fileEntry = await this.file.resolveLocalFilesystemUrl(nativePath) as FileEntry;
+        fileEntry.file(f => {
+          const reader = new FileReader() as any; // for some reason reader is not working as expected
+          reader.readAsText(f);
+          
+          const checker = () => {
+            if (reader._readyState === 2) {
+              resolve(reader._result);
+            } else {
+              setTimeout(() => checker(), 250); // wait to check again
+            }
+          };
+          checker();
+        });
+      } catch (error) {
+        reject(error);
+      }
     });
+  }
+
+  resoluveNativePath(path: string) {
+    return this.filePath.resolveNativePath(path);
   }
 
   private async checkPermission(permission: any) {

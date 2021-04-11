@@ -9,4 +9,6 @@ export interface BuyingOverview {
   lastTimeUpdated: string;
   isBought: number;
   price: number;
+  branch: string;
+  lastUnitPrice?: number;
 }
