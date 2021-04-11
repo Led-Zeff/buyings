@@ -29,6 +29,10 @@ const routes: Routes = [
   {
     path: 'packages',
     loadChildren: () => import('./pages/packages/packages.module').then( m => m.PackagesPageModule)
+  },
+  {
+    path: 'branches',
+    loadChildren: () => import('./pages/branches/branches.module').then( m => m.BranchesPageModule)
   }
 ];
 

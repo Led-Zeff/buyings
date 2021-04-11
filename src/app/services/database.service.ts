@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
-import { Platform, ToastController } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
-import { filter, share } from 'rxjs/operators';
+import { Platform } from '@ionic/angular';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ResultSet } from '../models/result-set';
 import { Mappers } from '../utils/mappers';
 import { SqlUtils } from '../utils/sql-utils';
@@ -16,7 +16,7 @@ import { FileService } from './file.service';
 export class DatabaseService {
   private database: SQLiteObject;
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  private dbImported: BehaviorSubject<void> = new BehaviorSubject(null);
+  private dbImported: ReplaySubject<void> = new ReplaySubject(1); // bufferSize set to 1 so it only emits 1 value
 
   constructor(platform: Platform,
     private sqlitePorter: SQLitePorter,
